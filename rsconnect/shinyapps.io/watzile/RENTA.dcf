@@ -1,0 +1,12 @@
+name: RENTA
+title: RENTA
+username: watzile
+account: watzile
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 17585356
+bundleId: 12232221
+url: https://watzile.shinyapps.io/RENTA/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
