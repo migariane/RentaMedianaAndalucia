@@ -1,12 +1,16 @@
 # Desigualdades Sociales en Andalucía
 
+<p align="center">
+  <img src="www/logo_ugr.png" alt="Logo UGR" height="80">
+</p>
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21237758.svg)](https://doi.org/10.5281/zenodo.21237758)
+
 Aplicación web interactiva (Shiny) para visualizar datos socioeconómicos y de renta de los hogares en Andalucía a nivel de sección censal (2015-2022). Incluye un Asistente Inteligente impulsado por IA que permite hacer preguntas sobre los datos en lenguaje natural, garantizando la máxima privacidad, ya que se ejecuta íntegramente de forma local.
 
 **Autores:** Miguel Angel Luque Fernández, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Angel Montero Alonso y Juan Manuel Melchor Rodríguez (Doctores/Profesores de la UGR)
 
 **Acceso en línea:** Puedes explorar la aplicación directamente en la web sin necesidad de instalación a través de [Shinyapps.io](https://watzile.shinyapps.io/RENTA/).
-
-**Cita y Referencia (DOI):** Podrás encontrar y citar el repositorio y los datos en Zenodo a través del siguiente enlace: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21237758.svg)](https://doi.org/10.5281/zenodo.21237758)
 
 ---
 
@@ -36,16 +40,52 @@ Sigue estos pasos para configurarlo:
 2. Haz clic en el botón **"Run App"** (situado en la parte superior del panel de código).
 3. ¡Listo! Ya puedes explorar los mapas sociodemográficos y hacerle preguntas al asistente inteligente en la pestaña "Asistente IA".
 
-### 4. Licencia
+---
 
-Este proyecto está bajo la Licencia MIT. Esto significa que es un software de código abierto que permite la libre utilización, modificación, copia y distribución del código.
-Enfoque Educativo y de Investigación
+## Cómo citar
 
-Hacemos especial énfasis en su uso con fines educativos, académicos y de investigación. Animamos a estudiantes, profesores e investigadores a utilizar esta herramienta para la formación en análisis socioeconómico, visualización de datos espaciales con R Shiny y el desarrollo de tecnologías de IA locales aplicadas a las ciencias sociales. Si utilizas este proyecto en tu investigación o material docente, te agradecemos que cites adecuadamente a los autores a través del enlace de Zenodo provisto anteriormente.
+Si usas esta aplicación en tu investigación, por favor cítala como:
 
-### 5. Financiación y Agradecimientos
+> Luque Fernandez, M. A., Rivas Gervilla, G., Rivera Izquierdo, M., Montero Alonso, M. A., & Melchor Rodriguez, J. M. (2026). *Desigualdades Sociales en Andalucía* (v.1.0.0) [Software]. Zenodo. [https://doi.org/10.5281/zenodo.21237758](https://doi.org/10.5281/zenodo.21237758)
+
+O en formato BibTeX:
+```bibtex
+@software{luque_fernandez_2026_21237758,
+  author       = {Luque Fernandez, Miguel Angel and
+                  Rivas Gervilla, Gustavo and
+                  Rivera Izquierdo, Mario and
+                  Montero Alonso, Miguel Angel and
+                  Melchor Rodriguez, Juan Manuel},
+  title        = {Desigualdades Sociales en Andalucía},
+  version      = {v.1.0.0},
+  year         = 2026,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.21237758},
+  url          = {https://doi.org/10.5281/zenodo.21237758},
+}
+```
+
+---
+
+## Licencia
+
+Este proyecto se distribuye bajo la **Licencia MIT Educativa**, una variante de la licencia MIT estándar orientada a fines académicos y de investigación.
+
+**¿Qué permite esta licencia?**
+- Usar, copiar y modificar el software libremente con fines educativos, de investigación y docencia.
+- Distribuir copias del software, siempre que se incluya el aviso de copyright y la licencia original.
+- Usar el software con fines comerciales, siempre que no se limite su disponibilidad para fines educativos y de investigación.
+
+**¿Qué exige esta licencia?**
+- Mantener el aviso de copyright y este texto de licencia en todas las copias o partes sustanciales del software.
+- Citar adecuadamente a los autores originales en cualquier publicación, presentación o trabajo derivado que utilice este software o sus resultados.
+
+**Exención de responsabilidad:** El software se proporciona "tal cual", sin garantía de ningún tipo. Los autores no se hacen responsables de los daños derivados de su uso.
+
+---
+
+## Financiación
 
 <img src="https://www.ugr.es/sites/default/files/2021-10/UGR-Marca-Horizontal-Color.png" alt="Logo Universidad de Granada" width="300"/>
 
-Este proyecto ha sido financiado por la **Universidad de Granada** en el marco del **Plan Propio de Investigación y Transferencia 2025**, específicamente bajo el **[Programa 21: Programa de Estimulación de la Investigación](https://investigacion.ugr.es/plan-propio/informacion/programas/p21)**.
-
+Este trabajo ha sido financiado por la **Universidad de Granada** en el marco del **Plan Propio de Investigación y Transferencia 2025**, específicamente bajo el **[Programa 21: Programa de Estimulación de la Investigación](https://investigacion.ugr.es/plan-propio/informacion/programas/p21)**.
