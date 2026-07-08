@@ -1,11 +1,5 @@
 # Desigualdades Sociales en Andalucía
 
-<p align="center">
-  <img src="www/logo_ugr.png" alt="Logo UGR" height="80">
-</p>
-
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21237758.svg)](https://doi.org/10.5281/zenodo.21237758)
-
 Aplicación web interactiva (Shiny) para visualizar datos socioeconómicos y de renta de los hogares en Andalucía a nivel de sección censal (2015-2022). Incluye un Asistente Inteligente impulsado por IA que permite hacer preguntas sobre los datos en lenguaje natural, garantizando la máxima privacidad, ya que se ejecuta íntegramente de forma local.
 
 **Autores:** Miguel Angel Luque Fernández, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Angel Montero Alonso y Juan Manuel Melchor Rodríguez (Doctores/Profesores de la UGR)
@@ -43,6 +37,8 @@ Sigue estos pasos para configurarlo:
 ---
 
 ## Cómo citar
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21237758.svg)](https://doi.org/10.5281/zenodo.21237758)
 
 Si usas esta aplicación en tu investigación, por favor cítala como:
 
@@ -85,6 +81,10 @@ Este proyecto se distribuye bajo la **Licencia MIT Educativa**, una variante de 
 ---
 
 ## Financiación
+
+<p align="center">
+  <img src="www/logo_ugr.png" alt="Logo UGR" height="80">
+</p>
 
 <img src="https://www.ugr.es/sites/default/files/2021-10/UGR-Marca-Horizontal-Color.png" alt="Logo Universidad de Granada" width="300"/>
 
