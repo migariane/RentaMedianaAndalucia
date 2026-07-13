@@ -1,6 +1,6 @@
 source("global.R")
 
-# ── UI ──
+#  UI 
 ui <- page_navbar(
   title = tags$span(
     bsicons::bs_icon("globe-americas", size = "1.2em"),
@@ -10,7 +10,7 @@ ui <- page_navbar(
   header = tags$head(tags$link(rel = "stylesheet", href = "custom.css")),
   fillable = TRUE,
 
-  # ── TAB 1: Explorar ──
+  #  TAB 1: Explorar 
   nav_panel(
     title = tags$span(bsicons::bs_icon("map"), " Explorar"),
     layout_sidebar(
@@ -79,13 +79,149 @@ ui <- page_navbar(
     )
   ),
 
-  # ── TAB 2: Asistente IA ──
+  #  TAB 2: Series Temporales 
+  nav_panel(
+    title = tags$span(bsicons::bs_icon("graph-up"), " Series Temporales"),
+    layout_sidebar(
+      sidebar = sidebar(
+        width = 300,
+        selectInput("prov_ts", "Provincia:", provincias_disponibles),
+        selectInput("ind_ts", "Indicador:", indicadores_ts, selected = "Renta_Mediana_UC"),
+        checkboxInput("compare_and", "Comparar con media de Andalucía", value = TRUE),
+        hr(),
+        uiOutput("ts_summary_box"),
+        hr(),
+        accordion(
+          accordion_panel("Información", icon = bsicons::bs_icon("info-circle"),
+            p("Evolución anual 2015-2022 del indicador seleccionado, agregado por provincia
+               (media simple entre secciones censales; suma en el caso de Población)."),
+            p(strong("Brecha P90/P10:"), " ratio entre la renta mediana del percentil 90
+               y del percentil 10 de las secciones censales del área seleccionada.")
+          )
+        )
+      ),
+      card(
+        full_screen = TRUE,
+        card_header(
+          class = "d-flex justify-content-between align-items-center",
+          div(strong("Evolución temporal (2015-2022)"), " — ", textOutput("ts_title", inline = TRUE))
+        ),
+        card_body(plotlyOutput("ts_plot", height = "480px"))
+      ),
+      card(
+        card_header(strong("Datos por año")),
+        card_body(tableOutput("ts_table"))
+      )
+    )
+  ),
+
+  # TAB 3: Informe (conclusiones y curso de acción) 
+  nav_panel(
+    title = tags$span(bsicons::bs_icon("file-earmark-text"), " Informe"),
+    div(class = "about-section",
+
+      h2("Resumen ejecutivo"),
+      div(class = "definition-card",
+        p(sprintf(
+          paste0("Entre %d y %d, la renta mediana por unidad de consumo en Andalucía pasó de %s € ",
+                 "a %s € (un %s%% de crecimiento). Sin embargo, la desigualdad territorial apenas se ",
+                 "ha movido: la brecha P90/P10 fue de %sx en %d y de %sx en %d."),
+          informe_stats$anio_ini, informe_stats$anio_fin,
+          format(round(informe_stats$renta_ini), big.mark = ".", decimal.mark = ","),
+          format(round(informe_stats$renta_fin), big.mark = ".", decimal.mark = ","),
+          informe_stats$crecimiento_renta,
+          round(informe_stats$brecha_ini, 2), informe_stats$anio_ini,
+          round(informe_stats$brecha_fin, 2), informe_stats$anio_fin
+        ))
+      ),
+
+      h2("Resultados principales"),
+      div(class = "definition-card",
+        tags$ul(
+          tags$li(strong("Renta: "), sprintf(
+            "crecimiento sostenido del %s%% en Andalucía (%d-%d), liderado por las provincias con mayor
+             dinamismo económico; algunas zonas del interior crecen algo menos.",
+            informe_stats$crecimiento_renta, informe_stats$anio_ini, informe_stats$anio_fin)),
+          tags$li(strong("Desigualdad interna: "), sprintf(
+            "la brecha P90/P10 se mantiene estable (%sx → %sx): el crecimiento económico no reduce
+             la desigualdad territorial relativa.",
+            round(informe_stats$brecha_ini, 2), round(informe_stats$brecha_fin, 2))),
+          tags$li(strong("Envejecimiento: "), sprintf(
+            "la edad media sube de %s a %s años y el %% de mayores de 65 pasa de %s%% a %s%%.",
+            round(informe_stats$edad_ini, 1), round(informe_stats$edad_fin, 1),
+            round(informe_stats$mayor65_ini, 1), round(informe_stats$mayor65_fin, 1))),
+          tags$li(strong("Hogares unipersonales: "), sprintf(
+            "suben de %s%% a %s%%, coherente con el envejecimiento y con posibles focos de
+             vulnerabilidad social.",
+            round(informe_stats$hogares_uni_ini, 1), round(informe_stats$hogares_uni_fin, 1))),
+          tags$li(strong("Población extranjera: "), sprintf(
+            "sube de %s%% a %s%% de media, con fuerte heterogeneidad provincial.",
+            round(informe_stats$extranjera_ini, 1), round(informe_stats$extranjera_fin, 1)))
+        )
+      ),
+
+      h2("Extremos territoriales"),
+      div(class = "definition-card",
+        p(sprintf(
+          paste0("En %d, la sección con mayor renta mediana es %s (%s, %s €), mientras que la de menor ",
+                 "renta es %s (%s, %s €) — una diferencia de más de %sx entre ambas."),
+          informe_stats$anio_fin,
+          informe_stats$sec_max$Municipio, informe_stats$sec_max$Provincia,
+          format(round(informe_stats$sec_max$Renta_Mediana_UC), big.mark = ".", decimal.mark = ","),
+          informe_stats$sec_min$Municipio, informe_stats$sec_min$Provincia,
+          format(round(informe_stats$sec_min$Renta_Mediana_UC), big.mark = ".", decimal.mark = ","),
+          round(informe_stats$sec_max$Renta_Mediana_UC / informe_stats$sec_min$Renta_Mediana_UC, 1)
+        ))
+      ),
+
+      h2("Conclusiones"),
+      div(class = "definition-card",
+        p("Andalucía mejora en términos absolutos de renta, pero no reduce su desigualdad territorial
+           relativa: el crecimiento económico no se traduce en convergencia entre secciones censales.
+           A esto se suma un envejecimiento estructural y una fragmentación de los hogares que,
+           combinados con la desigualdad de renta, dibujan focos de vulnerabilidad muy localizados
+           que un mapa provincial agregado no captaría — de ahí el valor de trabajar a nivel de
+           sección censal, como permite esta aplicación.")
+      ),
+
+      h2("Curso de acción sugerido"),
+      div(class = "definition-card",
+        p(strong("Para explotar mejor los resultados de la app:")),
+        tags$ol(
+          tags$li("Automatizar un ranking de \u201csecciones cr\u00edticas\u201d cruzando renta baja +
+                    brecha alta + % hogares unipersonales alto."),
+          tags$li("Complementar el ratio P90/P10 con un \u00edndice de Gini o Theil por secci\u00f3n,
+                    m\u00e1s robusto y est\u00e1ndar en la literatura de desigualdad territorial."),
+          tags$li("Cruzar renta por secci\u00f3n censal con indicadores de salud mediante m\u00e9todos
+                    causales (TMLE / g-computation) para estudiar gradientes sociales en salud a
+                    nivel fino.")
+        ),
+        p(strong("Para uso divulgativo/institucional:")),
+        tags$ol(
+          tags$li("Generar autom\u00e1ticamente un informe PDF/Word anual con `generate_narrative()`
+                    y los datos m\u00e1s recientes."),
+          tags$li("Usar el asistente de IA (querychat) como canal para consultas ad-hoc de
+                    responsables municipales sobre sus secciones.")
+        )
+      ),
+
+      p(style = "font-size:0.85em; color:#7f8c8d; margin-top:1.5rem;",
+        sprintf(
+          "Informe generado autom\u00e1ticamente a partir de %s secciones censales (INE, Atlas de
+           Distribuci\u00f3n de Renta de los Hogares, %d-%d).",
+          format(informe_stats$n_secciones_fin, big.mark = "."),
+          informe_stats$anio_ini, informe_stats$anio_fin
+        ))
+    )
+  ),
+
+  #  TAB 4: Asistente IA 
   nav_panel(
     title = tags$span(bsicons::bs_icon("robot"), " Asistente IA"),
     uiOutput("chat_panel")
   ),
 
-  # ── TAB 3: Metodología ──
+  # TAB 5: Metodología 
   nav_panel(
     title = tags$span(bsicons::bs_icon("book"), " Metodología"),
     div(class = "about-section",
@@ -137,7 +273,7 @@ ui <- page_navbar(
   )
 )
 
-# ── SERVER ──
+# SERVER 
 server <- function(input, output, session) {
 
   # Map loading
@@ -244,6 +380,89 @@ server <- function(input, output, session) {
         title = HTML(paste0("<strong>", ind_name, "</strong>")),
         opacity = 1, labFormat = labelFormat(digits = 0, big.mark = ".", between = " – ")
       )
+  })
+
+  # ── Series Temporales ──
+  ts_series <- reactive({
+    req(input$prov_ts, input$ind_ts)
+    calc_ts(datos, input$prov_ts, input$ind_ts)
+  })
+
+  ts_series_and <- reactive({
+    req(input$ind_ts)
+    calc_ts(datos, "Toda Andalucía", input$ind_ts)
+  })
+
+  output$ts_title <- renderText({
+    req(input$prov_ts, input$ind_ts)
+    nombre_ind <- names(indicadores_ts)[indicadores_ts == input$ind_ts]
+    paste0(input$prov_ts, " — ", nombre_ind)
+  })
+
+  output$ts_plot <- renderPlotly({
+    req(ts_series())
+    serie <- ts_series()
+    nombre_ind <- names(indicadores_ts)[indicadores_ts == input$ind_ts]
+
+    p <- plot_ly() %>%
+      add_trace(
+        data = serie, x = ~año, y = ~valor, type = "scatter", mode = "lines+markers",
+        name = input$prov_ts,
+        line = list(color = "#1a5276", width = 3),
+        marker = list(color = "#1a5276", size = 7)
+      )
+
+    if (isTRUE(input$compare_and) && input$prov_ts != "Toda Andalucía") {
+      serie_and <- ts_series_and()
+      p <- p %>% add_trace(
+        data = serie_and, x = ~año, y = ~valor, type = "scatter", mode = "lines",
+        name = "Toda Andalucía",
+        line = list(color = "#5d6d7e", width = 2, dash = "dash")
+      )
+    }
+
+    p %>% layout(
+      xaxis = list(title = "Año", dtick = 1),
+      yaxis = list(title = nombre_ind),
+      hovermode = "x unified",
+      legend = list(orientation = "h", y = -0.2),
+      font = list(family = "Inter, sans-serif"),
+      margin = list(t = 20)
+    )
+  })
+
+  output$ts_table <- renderTable({
+    req(ts_series())
+    serie <- ts_series()
+    ind <- input$ind_ts
+    serie %>%
+      mutate(Valor = sapply(valor, function(v) {
+        if (ind == "brecha") {
+          if (is.na(v)) "—" else paste0(round(v, 2), "x")
+        } else {
+          format_value(v, ind)
+        }
+      })) %>%
+      select(Año = año, Valor)
+  }, striped = TRUE, bordered = TRUE, hover = TRUE, width = "100%")
+
+  output$ts_summary_box <- renderUI({
+    serie <- ts_series()
+    if (nrow(serie) < 2) return(NULL)
+    v_ini <- serie$valor[serie$año == min(serie$año)]
+    v_fin <- serie$valor[serie$año == max(serie$año)]
+    if (is.na(v_ini) || is.na(v_fin) || v_ini == 0) return(NULL)
+
+    cambio <- round((v_fin - v_ini) / v_ini * 100, 1)
+    color <- if (cambio >= 0) "#1e8449" else "#c0392b"
+    icono <- if (cambio >= 0) "arrow-up-circle-fill" else "arrow-down-circle-fill"
+
+    div(style = paste0("padding:12px; background:#f4f6f7; border-radius:10px; border-left:4px solid ", color, ";"),
+      div(style = "font-size:0.85em; color:#5d6d7e;",
+          paste0("Cambio ", min(serie$año), " \u2192 ", max(serie$año))),
+      div(style = paste0("font-size:1.4em; font-weight:800; color:", color, ";"),
+          bsicons::bs_icon(icono), paste0(" ", ifelse(cambio >= 0, "+", ""), cambio, "%"))
+    )
   })
 
   # AI Chat (Ollama local o API en la nube)

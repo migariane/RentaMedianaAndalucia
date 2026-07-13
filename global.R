@@ -5,6 +5,7 @@ library(dplyr)
 library(sf)
 library(stringr)
 library(htmltools)
+library(plotly)
 
 ai_packages_ok <- tryCatch({
   library(querychat)
@@ -80,6 +81,35 @@ get_palette <- function(ind) {
   )
 }
 
+# ── Serie temporal: indicadores disponibles (incluye la brecha de desigualdad) ──
+indicadores_ts <- c(indicadores_completos, "Brecha de Desigualdad (P90/P10)" = "brecha")
+
+# Calcula la evolución anual de un indicador para una provincia (o toda Andalucía)
+calc_ts <- function(df, prov, ind) {
+  if (prov != "Toda Andalucía") df <- df %>% filter(Provincia == prov)
+
+  if (ind == "brecha") {
+    df %>%
+      group_by(año) %>%
+      summarise(
+        valor = {
+          q1 <- quantile(Renta_Mediana_UC, 0.1, na.rm = TRUE)
+          q9 <- quantile(Renta_Mediana_UC, 0.9, na.rm = TRUE)
+          if (is.na(q1) || q1 == 0) NA_real_ else as.numeric(q9 / q1)
+        },
+        .groups = "drop"
+      )
+  } else if (ind == "pob") {
+    df %>%
+      group_by(año) %>%
+      summarise(valor = sum(pob, na.rm = TRUE), .groups = "drop")
+  } else {
+    df %>%
+      group_by(año) %>%
+      summarise(valor = mean(.data[[ind]], na.rm = TRUE), .groups = "drop")
+  }
+}
+
 build_tooltip <- function(res, val, nombre_ind, indicador) {
   vals <- sapply(seq_along(val), function(i) format_value(val[i], indicador))
   sprintf(
@@ -141,3 +171,67 @@ generate_narrative <- function(df, prov, year, datos_all) {
   
   paste(parts, collapse = " ")
 }
+
+# ── Estadísticas precalculadas para la pestaña "Informe" ──
+# Se calculan una sola vez al arrancar la app (no dependen de los inputs del usuario).
+compute_informe_stats <- function(datos, anio_ini = 2015, anio_fin = 2022) {
+
+  stat_year <- function(year, var, fun = mean) fun(datos[[var]][datos$año == year], na.rm = TRUE)
+
+  brecha_year <- function(year) {
+    d <- datos[datos$año == year, ]
+    q1 <- quantile(d$Renta_Mediana_UC, 0.1, na.rm = TRUE)
+    q9 <- quantile(d$Renta_Mediana_UC, 0.9, na.rm = TRUE)
+    if (is.na(q1) || q1 == 0) NA_real_ else as.numeric(q9 / q1)
+  }
+
+  prov_growth <- datos %>%
+    filter(año %in% c(anio_ini, anio_fin)) %>%
+    group_by(Provincia, año) %>%
+    summarise(renta = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop") %>%
+    tidyr_pivot_renta() %>%
+    mutate(cambio = round((renta_fin - renta_ini) / renta_ini * 100, 1)) %>%
+    arrange(desc(cambio))
+
+  d_fin <- datos[datos$año == anio_fin, ]
+  sec_max <- d_fin[which.max(d_fin$Renta_Mediana_UC), c("Municipio", "Provincia", "Renta_Mediana_UC")]
+  sec_min <- d_fin[which.min(d_fin$Renta_Mediana_UC), c("Municipio", "Provincia", "Renta_Mediana_UC")]
+
+  prov_fin <- datos %>%
+    filter(año == anio_fin) %>%
+    group_by(Provincia) %>%
+    summarise(renta = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop") %>%
+    arrange(desc(renta))
+
+  list(
+    anio_ini = anio_ini, anio_fin = anio_fin,
+    n_secciones_fin = nrow(d_fin),
+    renta_ini = stat_year(anio_ini, "Renta_Mediana_UC"),
+    renta_fin = stat_year(anio_fin, "Renta_Mediana_UC"),
+    crecimiento_renta = round((stat_year(anio_fin, "Renta_Mediana_UC") - stat_year(anio_ini, "Renta_Mediana_UC")) /
+                                 stat_year(anio_ini, "Renta_Mediana_UC") * 100, 1),
+    brecha_ini = brecha_year(anio_ini),
+    brecha_fin = brecha_year(anio_fin),
+    edad_ini = stat_year(anio_ini, "edad_media"),
+    edad_fin = stat_year(anio_fin, "edad_media"),
+    mayor65_ini = stat_year(anio_ini, "mayor_65"),
+    mayor65_fin = stat_year(anio_fin, "mayor_65"),
+    hogares_uni_ini = stat_year(anio_ini, "hogares_uni"),
+    hogares_uni_fin = stat_year(anio_fin, "hogares_uni"),
+    extranjera_ini = stat_year(anio_ini, "pob_extranjera"),
+    extranjera_fin = stat_year(anio_fin, "pob_extranjera"),
+    prov_growth = prov_growth,
+    prov_fin = prov_fin,
+    sec_max = sec_max,
+    sec_min = sec_min
+  )
+}
+
+# Pequeño helper para no depender de tidyr::pivot_wider (solo dplyr base)
+tidyr_pivot_renta <- function(df) {
+  ini <- df %>% filter(año == min(año)) %>% select(Provincia, renta_ini = renta)
+  fin <- df %>% filter(año == max(año)) %>% select(Provincia, renta_fin = renta)
+  inner_join(ini, fin, by = "Provincia")
+}
+
+informe_stats <- compute_informe_stats(datos)
