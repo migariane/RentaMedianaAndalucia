@@ -105,7 +105,6 @@ ui <- page_navbar(
             "Renta media Q1 (más pobre)" = "q1_renta",
             "Renta media Q5 (más rico)" = "q5_renta",
             "Edad Media" = "edad_media",
-            "Población Total" = "pob",
             "% Menores de 18 años" = "menor_18",
             "% Mayores de 65 años" = "mayor_65",
             "Tamaño Medio del Hogar" = "tam_hogar",
@@ -418,7 +417,6 @@ server <- function(input, output, session) {
       medias <- c(
         Renta_Mediana_UC = mean(sub$Renta_Mediana_UC, na.rm = TRUE),
         edad_media = mean(sub$edad_media, na.rm = TRUE),
-        pob = mean(sub$pob, na.rm = TRUE),
         menor_18 = mean(sub$menor_18, na.rm = TRUE),
         mayor_65 = mean(sub$mayor_65, na.rm = TRUE),
         tam_hogar = mean(sub$tam_hogar, na.rm = TRUE),
@@ -482,7 +480,6 @@ server <- function(input, output, session) {
 
     # Formato del eje Y según el indicador
     y_tickformat <- switch(input$ts_ind,
-      "pob" = ",.0f",
       "Renta_Mediana_UC" = ".,0f",
       "q1_renta" = ".,0f",
       "q5_renta" = ".,0f",
