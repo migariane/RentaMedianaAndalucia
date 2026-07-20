@@ -13,6 +13,7 @@ ai_packages_ok <- tryCatch({
   TRUE
 }, error = function(e) FALSE)
 
+# ── Carga de datos de renta y población ──
 load("datos_rentapop_long.RData")
 datos$id <- str_pad(as.character(datos$id), width = 10, side = "left", pad = "0")
 
@@ -21,6 +22,73 @@ datos <- datos %>%
   mutate(Renta_Quintil = ntile(Renta_Mediana_UC, 5)) %>%
   ungroup() %>%
   mutate(pob_extranjera = 100 - pob_esp)
+
+# ── Carga de Esperanza de Vida por provincia ──
+# La EV se calcula en pipeline_esperanza_vida_por_causa.R a nivel de provincia
+# (no de sección censal) porque la BDLPA no proporciona código de sección en
+# el fichero de personas. Ver pipeline para documentación detallada.
+ruta_ev <- "ev_por_provincia_ancho.csv"
+ev_prov <- read.csv(ruta_ev, stringsAsFactors = FALSE)
+datos <- datos %>%
+  left_join(ev_prov, by = c("Provincia" = "provincia"))
+datos$EV_Media <- round((datos$EV_Hombres + datos$EV_Mujeres) / 2, 2)
+
+# ── Tabla resumen: renta media por provincia (para gráfico renta vs EV) ──
+renta_provincia <- datos %>%
+  group_by(Provincia) %>%
+  summarise(Renta_Media = mean(Renta_Mediana_UC, na.rm = TRUE),
+            EV_Media = mean(EV_Media, na.rm = TRUE),
+            .groups = "drop")
+
+# ── Carga de ganancia de EV por causa ──
+ruta_ganancia <- "ganancia_esperanza_vida_por_causa.csv"
+ganancia_causas <- read.csv(ruta_ganancia, stringsAsFactors = FALSE)
+
+# ── Carga de tabla de vida completa por sexo ──
+tabla_vida_hombres <- read.csv("tabla_vida_hombres.csv", stringsAsFactors = FALSE)
+tabla_vida_mujeres <- read.csv("tabla_vida_mujeres.csv", stringsAsFactors = FALSE)
+
+# ── Carga de ganancia de EV por causa (desde el pipeline) ──
+ruta_ganancia <- if (file.exists("../Resultados/ganancia_esperanza_vida_por_causa.csv")) {
+  "../Resultados/ganancia_esperanza_vida_por_causa.csv"
+} else if (file.exists("/mnt/user-data/outputs/ganancia_esperanza_vida_por_causa.csv")) {
+  "/mnt/user-data/outputs/ganancia_esperanza_vida_por_causa.csv"
+} else {
+  "ganancia_esperanza_vida_por_causa.csv"
+}
+ganancia_causas <- read.csv(ruta_ganancia, stringsAsFactors = FALSE)
+
+# ── Carga de tabla de vida completa por sexo (para EV por bandas de edad) ──
+ruta_tabla_h <- if (file.exists("../Resultados/tabla_vida_hombres.csv")) {
+  "../Resultados/tabla_vida_hombres.csv"
+} else if (file.exists("/mnt/user-data/outputs/tabla_vida_hombres.csv")) {
+  "/mnt/user-data/outputs/tabla_vida_hombres.csv"
+} else {
+  "tabla_vida_hombres.csv"
+}
+ruta_tabla_m <- if (file.exists("../Resultados/tabla_vida_mujeres.csv")) {
+  "../Resultados/tabla_vida_mujeres.csv"
+} else if (file.exists("/mnt/user-data/outputs/tabla_vida_mujeres.csv")) {
+  "/mnt/user-data/outputs/tabla_vida_mujeres.csv"
+} else {
+  "tabla_vida_mujeres.csv"
+}
+tabla_vida_hombres <- read.csv(ruta_tabla_h, stringsAsFactors = FALSE)
+tabla_vida_mujeres <- read.csv(ruta_tabla_m, stringsAsFactors = FALSE)
+
+# Colores para cada causa (paleta fija para mantener consistencia entre gráficos)
+colores_causas <- c(
+  "Tumores malignos" = "#e74c3c",
+  "Enfermedades del sistema circulatorio" = "#c0392b",
+  "Enfermedades del sistema respiratorio" = "#3498db",
+  "Enfermedades del aparato digestivo" = "#2ecc71",
+  "Enfermedades endocrinas (diabetes, etc.)" = "#f39c12",
+  "Enfermedades del sistema nervioso" = "#9b59b6",
+  "Causas externas (accidentes, suicidio...)" = "#e67e22",
+  "Enfermedades infecciosas" = "#1abc9c",
+  "Causas relacionadas con el alcohol" = "#d35400",
+  "Resto de causas" = "#7f8c8d"
+)
 
 provincias_disponibles <- c("Toda Andalucía", sort(unique(datos$Provincia)))
 
@@ -34,7 +102,10 @@ indicadores_completos <- c(
   "% Hogares Unipersonales" = "hogares_uni",
   "% Población Española" = "pob_esp",
   "% Población Extranjera" = "pob_extranjera",
-  "Quintil de Renta" = "Renta_Quintil"
+  "Quintil de Renta" = "Renta_Quintil",
+  "Esperanza Vida (Hombres)" = "EV_Hombres",
+  "Esperanza Vida (Mujeres)" = "EV_Mujeres",
+  "Esperanza Vida (Media)" = "EV_Media"
 )
 
 codigos_andalucia <- c("04", "11", "14", "18", "21", "23", "29", "41")
@@ -67,6 +138,7 @@ format_value <- function(valor, indicador) {
     "Renta_Quintil" = paste0("Q", round(valor)),
     "edad_media" = paste0(round(valor, 1), " años"),
     "tam_hogar" = round(valor, 2),
+    "EV_Hombres" = , "EV_Mujeres" = , "EV_Media" = paste0(round(valor, 1), " años"),
     round(valor, 2)
   )
 }
@@ -77,37 +149,9 @@ get_palette <- function(ind) {
     "menor_18" = , "pob_extranjera" = "YlOrRd",
     "mayor_65" = , "edad_media" = "PuBuGn",
     "pob" = "YlGnBu",
+    "EV_Hombres" = , "EV_Mujeres" = , "EV_Media" = "RdYlGn",
     "Spectral"
   )
-}
-
-# ── Serie temporal: indicadores disponibles (incluye la brecha de desigualdad) ──
-indicadores_ts <- c(indicadores_completos, "Brecha de Desigualdad (P90/P10)" = "brecha")
-
-# Calcula la evolución anual de un indicador para una provincia (o toda Andalucía)
-calc_ts <- function(df, prov, ind) {
-  if (prov != "Toda Andalucía") df <- df %>% filter(Provincia == prov)
-
-  if (ind == "brecha") {
-    df %>%
-      group_by(año) %>%
-      summarise(
-        valor = {
-          q1 <- quantile(Renta_Mediana_UC, 0.1, na.rm = TRUE)
-          q9 <- quantile(Renta_Mediana_UC, 0.9, na.rm = TRUE)
-          if (is.na(q1) || q1 == 0) NA_real_ else as.numeric(q9 / q1)
-        },
-        .groups = "drop"
-      )
-  } else if (ind == "pob") {
-    df %>%
-      group_by(año) %>%
-      summarise(valor = sum(pob, na.rm = TRUE), .groups = "drop")
-  } else {
-    df %>%
-      group_by(año) %>%
-      summarise(valor = mean(.data[[ind]], na.rm = TRUE), .groups = "drop")
-  }
 }
 
 build_tooltip <- function(res, val, nombre_ind, indicador) {
@@ -171,67 +215,3 @@ generate_narrative <- function(df, prov, year, datos_all) {
   
   paste(parts, collapse = " ")
 }
-
-# ── Estadísticas precalculadas para la pestaña "Informe" ──
-# Se calculan una sola vez al arrancar la app (no dependen de los inputs del usuario).
-compute_informe_stats <- function(datos, anio_ini = 2015, anio_fin = 2022) {
-
-  stat_year <- function(year, var, fun = mean) fun(datos[[var]][datos$año == year], na.rm = TRUE)
-
-  brecha_year <- function(year) {
-    d <- datos[datos$año == year, ]
-    q1 <- quantile(d$Renta_Mediana_UC, 0.1, na.rm = TRUE)
-    q9 <- quantile(d$Renta_Mediana_UC, 0.9, na.rm = TRUE)
-    if (is.na(q1) || q1 == 0) NA_real_ else as.numeric(q9 / q1)
-  }
-
-  prov_growth <- datos %>%
-    filter(año %in% c(anio_ini, anio_fin)) %>%
-    group_by(Provincia, año) %>%
-    summarise(renta = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop") %>%
-    tidyr_pivot_renta() %>%
-    mutate(cambio = round((renta_fin - renta_ini) / renta_ini * 100, 1)) %>%
-    arrange(desc(cambio))
-
-  d_fin <- datos[datos$año == anio_fin, ]
-  sec_max <- d_fin[which.max(d_fin$Renta_Mediana_UC), c("Municipio", "Provincia", "Renta_Mediana_UC")]
-  sec_min <- d_fin[which.min(d_fin$Renta_Mediana_UC), c("Municipio", "Provincia", "Renta_Mediana_UC")]
-
-  prov_fin <- datos %>%
-    filter(año == anio_fin) %>%
-    group_by(Provincia) %>%
-    summarise(renta = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop") %>%
-    arrange(desc(renta))
-
-  list(
-    anio_ini = anio_ini, anio_fin = anio_fin,
-    n_secciones_fin = nrow(d_fin),
-    renta_ini = stat_year(anio_ini, "Renta_Mediana_UC"),
-    renta_fin = stat_year(anio_fin, "Renta_Mediana_UC"),
-    crecimiento_renta = round((stat_year(anio_fin, "Renta_Mediana_UC") - stat_year(anio_ini, "Renta_Mediana_UC")) /
-                                 stat_year(anio_ini, "Renta_Mediana_UC") * 100, 1),
-    brecha_ini = brecha_year(anio_ini),
-    brecha_fin = brecha_year(anio_fin),
-    edad_ini = stat_year(anio_ini, "edad_media"),
-    edad_fin = stat_year(anio_fin, "edad_media"),
-    mayor65_ini = stat_year(anio_ini, "mayor_65"),
-    mayor65_fin = stat_year(anio_fin, "mayor_65"),
-    hogares_uni_ini = stat_year(anio_ini, "hogares_uni"),
-    hogares_uni_fin = stat_year(anio_fin, "hogares_uni"),
-    extranjera_ini = stat_year(anio_ini, "pob_extranjera"),
-    extranjera_fin = stat_year(anio_fin, "pob_extranjera"),
-    prov_growth = prov_growth,
-    prov_fin = prov_fin,
-    sec_max = sec_max,
-    sec_min = sec_min
-  )
-}
-
-# Pequeño helper para no depender de tidyr::pivot_wider (solo dplyr base)
-tidyr_pivot_renta <- function(df) {
-  ini <- df %>% filter(año == min(año)) %>% select(Provincia, renta_ini = renta)
-  fin <- df %>% filter(año == max(año)) %>% select(Provincia, renta_fin = renta)
-  inner_join(ini, fin, by = "Provincia")
-}
-
-informe_stats <- compute_informe_stats(datos)

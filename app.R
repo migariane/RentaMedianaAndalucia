@@ -1,16 +1,16 @@
 source("global.R")
 
-#  UI 
+# ── UI ──
 ui <- page_navbar(
   title = tags$span(
-    bsicons::bs_icon("globe-americas", size = "1.2em"),
+    bsicons::bs_icon("people", size = "1.2em"),
     " Desigualdades Sociales en Andalucía"
   ),
   theme = app_theme,
   header = tags$head(tags$link(rel = "stylesheet", href = "custom.css")),
   fillable = TRUE,
 
-  #  TAB 1: Explorar 
+  # ── TAB 1: Explorar ──
   nav_panel(
     title = tags$span(bsicons::bs_icon("map"), " Explorar"),
     layout_sidebar(
@@ -24,11 +24,12 @@ ui <- page_navbar(
         accordion(
           accordion_panel("Información", icon = bsicons::bs_icon("info-circle"),
             p(strong("Datos:"), "Secciones censales de Andalucía, 2015-2022."),
-            p(strong("Fuente:"), "INE — Atlas de Distribución de Renta de los Hogares."),
+            p(strong("Fuente Renta y Demografía:"), "INE — Atlas de Distribución de Renta de los Hogares."),
+            p(strong("Fuente Esperanza de Vida:"), "BDLPA — Base de Datos Longitudinal de Población de Andalucía (Estadísticas Longitudinales de Supervivencia y Longevidad, cohorte censal 2011, seguimiento hasta 2023). Instituto de Estadística y Cartografía de Andalucía (IECA) y Universidad de Granada."),
             p(strong("Cartografía:"), "Shapefiles por año (INE)."),
             hr(),
-            p(strong("Autores:"), "Miguel Ángel Luque-Fernández, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez (Doctores de la UGR)"),
-            p(strong("Web:"), tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
+            p(strong("Autores:"), "Miguel Ángel Luque-Fernández, Paloma Massó Guijarro, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez (Doctores de la UGR) — ",
+              tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
             hr(),
             div(style="text-align: center;", tags$img(src="logo_ugr.png", height="50px", style="margin-bottom: 10px;")),
             p(style="font-size: 0.85em; color: #5d6d7e;", strong("Financiación:"), "Plan Propio de Investigación y Transferencia de la Universidad de Granada. 2025. Programa 21. Programa de estimulación a la investigación.")
@@ -38,7 +39,9 @@ ui <- page_navbar(
               tags$li("Selecciona provincia e indicador para actualizar el mapa."),
               tags$li("Mueve el slider para ver la evolución temporal."),
               tags$li("Pasa el cursor sobre las secciones para ver detalles."),
-              tags$li("Pulsa ▶ para animar la evolución anual.")
+              tags$li("Pulsa ▶ para animar la evolución anual."),
+              tags$li("La pestaña 'Relaciones' explora la correlación entre renta y esperanza de vida."),
+              tags$li("La pestaña 'Series Temporales' muestra la evolución anual de un indicador para una sección censal concreta.")
             )
           )
         )
@@ -52,8 +55,8 @@ ui <- page_navbar(
                   showcase = bsicons::bs_icon("currency-euro"), theme = "success"),
         value_box("Edad Media", textOutput("edad_prom"),
                   showcase = bsicons::bs_icon("person"), theme = "info"),
-        value_box("Brecha P90/P10", textOutput("brecha"),
-                  showcase = bsicons::bs_icon("arrow-left-right"), theme = "warning")
+        value_box("Esperanza Vida", textOutput("ev_prom"),
+                  showcase = bsicons::bs_icon("heart-pulse"), theme = "danger")
       ),
 
       div(class = "narrative-card",
@@ -74,154 +77,146 @@ ui <- page_navbar(
       ),
 
       div(class = "app-footer",
-        HTML("Fuente: INE &middot; Atlas de Distribución de Renta de los Hogares &middot; Secciones censales 2015-2022 <br> Autores: Miguel Ángel Luque-Fernández, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez")
+        HTML("Fuente: INE &middot; Atlas de Distribución de Renta de los Hogares &middot; BDLPA (IECA-UGR) &middot; Secciones censales 2015-2022 <br> Autores: Miguel Ángel Luque-Fernández, Paloma Massó Guijarro, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez")
       )
     )
   ),
 
-  #  TAB 2: Series Temporales 
-  nav_panel(
-    title = tags$span(bsicons::bs_icon("graph-up"), " Series Temporales"),
-    layout_sidebar(
-      sidebar = sidebar(
-        width = 300,
-        selectInput("prov_ts", "Provincia:", provincias_disponibles),
-        selectInput("ind_ts", "Indicador:", indicadores_ts, selected = "Renta_Mediana_UC"),
-        checkboxInput("compare_and", "Comparar con media de Andalucía", value = TRUE),
-        hr(),
-        uiOutput("ts_summary_box"),
-        hr(),
-        accordion(
-          accordion_panel("Información", icon = bsicons::bs_icon("info-circle"),
-            p("Evolución anual 2015-2022 del indicador seleccionado, agregado por provincia
-               (media simple entre secciones censales; suma en el caso de Población)."),
-            p(strong("Brecha P90/P10:"), " ratio entre la renta mediana del percentil 90
-               y del percentil 10 de las secciones censales del área seleccionada.")
-          )
-        )
-      ),
-      card(
-        full_screen = TRUE,
-        card_header(
-          class = "d-flex justify-content-between align-items-center",
-          div(strong("Evolución temporal (2015-2022)"), " — ", textOutput("ts_title", inline = TRUE))
-        ),
-        card_body(plotlyOutput("ts_plot", height = "480px"))
-      ),
-      card(
-        card_header(strong("Datos por año")),
-        card_body(tableOutput("ts_table"))
-      )
-    )
-  ),
-
-  # TAB 3: Informe (conclusiones y curso de acción) 
-  nav_panel(
-    title = tags$span(bsicons::bs_icon("file-earmark-text"), " Informe"),
-    div(class = "about-section",
-
-      h2("Resumen ejecutivo"),
-      div(class = "definition-card",
-        p(sprintf(
-          paste0("Entre %d y %d, la renta mediana por unidad de consumo en Andalucía pasó de %s € ",
-                 "a %s € (un %s%% de crecimiento). Sin embargo, la desigualdad territorial apenas se ",
-                 "ha movido: la brecha P90/P10 fue de %sx en %d y de %sx en %d."),
-          informe_stats$anio_ini, informe_stats$anio_fin,
-          format(round(informe_stats$renta_ini), big.mark = ".", decimal.mark = ","),
-          format(round(informe_stats$renta_fin), big.mark = ".", decimal.mark = ","),
-          informe_stats$crecimiento_renta,
-          round(informe_stats$brecha_ini, 2), informe_stats$anio_ini,
-          round(informe_stats$brecha_fin, 2), informe_stats$anio_fin
-        ))
-      ),
-
-      h2("Resultados principales"),
-      div(class = "definition-card",
-        tags$ul(
-          tags$li(strong("Renta: "), sprintf(
-            "crecimiento sostenido del %s%% en Andalucía (%d-%d), liderado por las provincias con mayor
-             dinamismo económico; algunas zonas del interior crecen algo menos.",
-            informe_stats$crecimiento_renta, informe_stats$anio_ini, informe_stats$anio_fin)),
-          tags$li(strong("Desigualdad interna: "), sprintf(
-            "la brecha P90/P10 se mantiene estable (%sx → %sx): el crecimiento económico no reduce
-             la desigualdad territorial relativa.",
-            round(informe_stats$brecha_ini, 2), round(informe_stats$brecha_fin, 2))),
-          tags$li(strong("Envejecimiento: "), sprintf(
-            "la edad media sube de %s a %s años y el %% de mayores de 65 pasa de %s%% a %s%%.",
-            round(informe_stats$edad_ini, 1), round(informe_stats$edad_fin, 1),
-            round(informe_stats$mayor65_ini, 1), round(informe_stats$mayor65_fin, 1))),
-          tags$li(strong("Hogares unipersonales: "), sprintf(
-            "suben de %s%% a %s%%, coherente con el envejecimiento y con posibles focos de
-             vulnerabilidad social.",
-            round(informe_stats$hogares_uni_ini, 1), round(informe_stats$hogares_uni_fin, 1))),
-          tags$li(strong("Población extranjera: "), sprintf(
-            "sube de %s%% a %s%% de media, con fuerte heterogeneidad provincial.",
-            round(informe_stats$extranjera_ini, 1), round(informe_stats$extranjera_fin, 1)))
-        )
-      ),
-
-      h2("Extremos territoriales"),
-      div(class = "definition-card",
-        p(sprintf(
-          paste0("En %d, la sección con mayor renta mediana es %s (%s, %s €), mientras que la de menor ",
-                 "renta es %s (%s, %s €) — una diferencia de más de %sx entre ambas."),
-          informe_stats$anio_fin,
-          informe_stats$sec_max$Municipio, informe_stats$sec_max$Provincia,
-          format(round(informe_stats$sec_max$Renta_Mediana_UC), big.mark = ".", decimal.mark = ","),
-          informe_stats$sec_min$Municipio, informe_stats$sec_min$Provincia,
-          format(round(informe_stats$sec_min$Renta_Mediana_UC), big.mark = ".", decimal.mark = ","),
-          round(informe_stats$sec_max$Renta_Mediana_UC / informe_stats$sec_min$Renta_Mediana_UC, 1)
-        ))
-      ),
-
-      h2("Conclusiones"),
-      div(class = "definition-card",
-        p("Andalucía mejora en términos absolutos de renta, pero no reduce su desigualdad territorial
-           relativa: el crecimiento económico no se traduce en convergencia entre secciones censales.
-           A esto se suma un envejecimiento estructural y una fragmentación de los hogares que,
-           combinados con la desigualdad de renta, dibujan focos de vulnerabilidad muy localizados
-           que un mapa provincial agregado no captaría — de ahí el valor de trabajar a nivel de
-           sección censal, como permite esta aplicación.")
-      ),
-
-      h2("Curso de acción sugerido"),
-      div(class = "definition-card",
-        p(strong("Para explotar mejor los resultados de la app:")),
-        tags$ol(
-          tags$li("Automatizar un ranking de \u201csecciones cr\u00edticas\u201d cruzando renta baja +
-                    brecha alta + % hogares unipersonales alto."),
-          tags$li("Complementar el ratio P90/P10 con un \u00edndice de Gini o Theil por secci\u00f3n,
-                    m\u00e1s robusto y est\u00e1ndar en la literatura de desigualdad territorial."),
-          tags$li("Cruzar renta por secci\u00f3n censal con indicadores de salud mediante m\u00e9todos
-                    causales (TMLE / g-computation) para estudiar gradientes sociales en salud a
-                    nivel fino.")
-        ),
-        p(strong("Para uso divulgativo/institucional:")),
-        tags$ol(
-          tags$li("Generar autom\u00e1ticamente un informe PDF/Word anual con `generate_narrative()`
-                    y los datos m\u00e1s recientes."),
-          tags$li("Usar el asistente de IA (querychat) como canal para consultas ad-hoc de
-                    responsables municipales sobre sus secciones.")
-        )
-      ),
-
-      p(style = "font-size:0.85em; color:#7f8c8d; margin-top:1.5rem;",
-        sprintf(
-          "Informe generado autom\u00e1ticamente a partir de %s secciones censales (INE, Atlas de
-           Distribuci\u00f3n de Renta de los Hogares, %d-%d).",
-          format(informe_stats$n_secciones_fin, big.mark = "."),
-          informe_stats$anio_ini, informe_stats$anio_fin
-        ))
-    )
-  ),
-
-  #  TAB 4: Asistente IA 
+  # ── TAB 2: Asistente IA ──
   nav_panel(
     title = tags$span(bsicons::bs_icon("robot"), " Asistente IA"),
     uiOutput("chat_panel")
   ),
 
-  # TAB 5: Metodología 
+  # ── TAB 3: Series Temporales ──
+  nav_panel(
+    title = tags$span(bsicons::bs_icon("graph-up"), " Series Temporales"),
+    layout_sidebar(
+      sidebar = sidebar(
+        width = 300,
+        selectInput("ts_prov", "Provincia:", choices = provincias_disponibles, selected = "Granada"),
+        selectInput("ts_ind", "Indicador:", choices = indicadores_completos, selected = "Renta_Mediana_UC"),
+        hr(),
+        p(strong("Estadísticos descriptivos"), style = "color:#1a5276; font-weight:600;"),
+        div(style = "background:#eaf2f8; border-radius:8px; padding:12px; margin-top:6px;",
+          textOutput("ts_stats")
+        ),
+        hr(),
+        p(style = "font-size:0.85em; color:#5d6d7e;",
+          "Evolución temporal del indicador seleccionado a nivel de provincia (2015–2022)."),
+        p(style = "font-size:0.85em; color:#5d6d7e;",
+          "La EV no varía anualmente porque se calcula sobre todo el período de seguimiento de la BDLPA (2011–2023).")
+      ),
+      card(
+        full_screen = TRUE,
+        card_header(
+          class = "d-flex justify-content-between align-items-center",
+          div(strong("Evolución temporal por provincia"), " — ", textOutput("ts_title", inline = TRUE))
+        ),
+        card_body(plotlyOutput("ts_plot", height = "500px"))
+      )
+    )
+  ),
+
+  # ── TAB 4: Relaciones ──
+  nav_panel(
+    title = tags$span(bsicons::bs_icon("graph-up"), " Relaciones"),
+    layout_sidebar(
+      sidebar = sidebar(
+        width = 300,
+        selectInput("prov_rel", "Provincia (resaltar):",
+                    choices = c("Ninguna", sort(unique(renta_provincia$Provincia))),
+                    selected = "Ninguna"),
+        hr(),
+        p(strong("Correlación Renta vs Esperanza de Vida"),
+          style = "color:#1a5276; font-weight:600;"),
+        div(class = "correlation-card",
+          style = "background:#eaf2f8; border-radius:8px; padding:12px; margin-top:6px;",
+          textOutput("correlacion_text")
+        ),
+        hr(),
+        p(style = "font-size:0.85em; color:#5d6d7e;",
+          "Cada punto representa una provincia andaluza. La línea muestra la tendencia lineal (mínimos cuadrados).")
+      ),
+      layout_columns(
+        col_widths = c(6, 6),
+        card(
+          full_screen = TRUE,
+          card_header(
+            class = "d-flex justify-content-between align-items-center",
+            div(strong("Renta media vs Esperanza de Vida por provincia"))
+          ),
+          card_body(plotlyOutput("renta_ev_scatter", height = "450px"))
+        ),
+        card(
+          full_screen = TRUE,
+          card_header(
+            class = "d-flex justify-content-between align-items-center",
+            div(strong("Esperanza de Vida por provincia y sexo"))
+          ),
+          card_body(plotlyOutput("ev_provincia_sexo_bars", height = "450px"))
+        )
+      )
+    )
+  ),
+
+  # ── TAB 4: Causas de Mortalidad ──
+  nav_panel(
+    title = tags$span(bsicons::bs_icon("heart-pulse"), " Causas Mortalidad"),
+    layout_sidebar(
+      sidebar = sidebar(
+        width = 280,
+        radioButtons("causa_sexo", "Sexo:",
+                     choices = c("Hombres" = "Hombres", "Mujeres" = "Mujeres"),
+                     selected = "Hombres", inline = TRUE),
+        hr(),
+        p(strong("Esperanza de Vida al nacer observada:"),
+          style = "color:#1a5276; font-weight:600;"),
+        div(class = "ev-observada-card",
+          style = "background:#eaf2f8; border-radius:8px; padding:12px; text-align:center;",
+          h2(textOutput("ev_observada_valor"), style = "color:#1a5276; margin:0;"),
+          p(textOutput("ev_observada_sexo"), style = "color:#5d6d7e; margin:2px 0 0 0;")
+        ),
+        hr(),
+        p(style = "font-size:0.85em; color:#5d6d7e;",
+          "Las tablas de vida se construyen con el método de Chiang (1968) aplicado a la BDLPA (cohorte censal 2011, seguimiento 2011-2023, ~637.000 personas)."),
+        p(style = "font-size:0.85em; color:#5d6d7e;",
+          "La 'ganancia' representa los años que ganaría la esperanza de vida al nacer si esa causa de muerte se eliminara por completo.")
+      ),
+      navset_card_underline(
+        title = "Análisis de mortalidad por causas",
+
+        nav_panel("Ganancia por causa",
+          layout_columns(
+            col_widths = c(7, 5),
+            card(
+              full_screen = TRUE,
+              card_header("Años ganados al eliminar cada causa"),
+              card_body(plotlyOutput("causas_ganancia_plot", height = "450px"))
+            ),
+            card(
+              full_screen = TRUE,
+              card_header("Tabla de ganancias"),
+              card_body(DT::dataTableOutput("causas_tabla", height = "450px"))
+            )
+          )
+        ),
+
+        nav_panel("EV por banda de edad",
+          layout_columns(
+            col_widths = c(12),
+            card(
+              full_screen = TRUE,
+              card_header("Esperanza de Vida por banda de edad"),
+              card_body(plotlyOutput("causas_ev_bandas", height = "450px"))
+            )
+          )
+        )
+      )
+    )
+  ),
+
+  # ── TAB 5: Metodología ──
   nav_panel(
     title = tags$span(bsicons::bs_icon("book"), " Metodología"),
     div(class = "about-section",
@@ -254,17 +249,26 @@ ui <- page_navbar(
            Valores más altos indican mayor desigualdad territorial dentro de la zona seleccionada.")
       ),
 
+      h2("Esperanza de Vida"),
+      div(class = "definition-card",
+        p("Número medio de años que le quedaría por vivir a una persona recién nacida si las tasas de mortalidad observadas durante el período de seguimiento (2011-2023) se mantuvieran constantes."),
+        p("Se calcula mediante tablas de vida (método de Chiang, 1968) a partir de los microdatos de la BDLPA (Muestra del Censo de 2011, ~637.000 personas con seguimiento hasta 2023)."),
+        p(strong("Desagregación geográfica:"), " Los valores están calculados a nivel de provincia, no de sección censal. Todas las secciones dentro de una provincia reciben el mismo valor porque el ID de persona en la BDLPA es un número secuencial de 6 dígitos que no contiene información geográfica más allá de la provincia."),
+        p("Ver el pipeline ", tags$code("pipeline_esperanza_vida_por_causa.R"), " para más detalles metodológicos.")
+      ),
+
       h2("Fuente de datos"),
       div(class = "definition-card",
         p("Instituto Nacional de Estadística (INE)."),
         p(tags$a(href = "https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177088&menu=ultiDatos&idp=1254735976608",
-                 target = "_blank", "Atlas de Distribución de Renta de los Hogares (ADRH)"))
+                 target = "_blank", "Atlas de Distribución de Renta de los Hogares (ADRH)")),
+        p("BDLPA — Base de Datos Longitudinal de Población de Andalucía (Estadísticas Longitudinales de Supervivencia y Longevidad en Andalucía, cohorte censal 2011, seguimiento hasta 2023). Instituto de Estadística y Cartografía de Andalucía (IECA) y Universidad de Granada.")
       ),
 
       h2("Autoría y Financiación"),
       div(class = "definition-card",
-        p(strong("Autores:"), " Miguel Ángel Luque-Fernández, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez (Doctores de la UGR)"),
-        p(strong("Página Web (MALF):"), tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
+        p(strong("Autores:"), " Miguel Ángel Luque-Fernández, Paloma Massó Guijarro, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez (Doctores de la UGR) — ",
+          tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
         hr(),
         div(style="margin-bottom: 15px;", tags$img(src="logo_ugr.png", height="60px")),
         p(strong("Agradecimientos / Financiación:"), "Plan Propio de Investigación y Transferencia de la Universidad de Granada. 2025. Programa 21. Programa de estimulación a la investigación.")
@@ -273,7 +277,7 @@ ui <- page_navbar(
   )
 )
 
-# SERVER 
+# ── SERVER ──
 server <- function(input, output, session) {
 
   # Map loading
@@ -326,13 +330,309 @@ server <- function(input, output, session) {
     paste0(round(edad, 1), " años")
   })
 
-  output$brecha <- renderText({
+  output$ev_prom <- renderText({
     df <- datos_filtrados()
-    if (nrow(df) < 10) return("—")
-    q1 <- quantile(df$Renta_Mediana_UC, 0.1, na.rm = TRUE)
-    q9 <- quantile(df$Renta_Mediana_UC, 0.9, na.rm = TRUE)
-    if (is.na(q1) || q1 == 0) return("—")
-    paste0(round(q9 / q1, 1), "x")
+    ev <- mean(df$EV_Media, na.rm = TRUE)
+    if (is.na(ev)) return("—")
+    paste0(round(ev, 1), " años")
+  })
+
+  # ── Series Temporales: datos agregados por provincia ──
+  ts_data <- reactive({
+    req(input$ts_prov)
+    vars <- c("Renta_Mediana_UC", "edad_media", "pob", "menor_18", "mayor_65",
+              "tam_hogar", "hogares_uni", "pob_esp", "pob_extranjera",
+              "Renta_Quintil", "EV_Hombres", "EV_Mujeres", "EV_Media")
+    if (input$ts_prov == "Toda Andalucía") {
+      datos %>%
+        group_by(año) %>%
+        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+    } else {
+      datos %>%
+        filter(Provincia == input$ts_prov) %>%
+        group_by(año) %>%
+        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+    }
+  })
+
+  # ── Series Temporales: título ──
+  output$ts_title <- renderText({
+    ind_name <- names(indicadores_completos)[indicadores_completos == input$ts_ind]
+    paste0(input$ts_prov, " — ", ind_name)
+  })
+
+  # ── Series Temporales: gráfico de evolución ──
+  output$ts_plot <- renderPlotly({
+    req(ts_data(), input$ts_ind)
+    df <- ts_data()
+    val <- df[[input$ts_ind]]
+    ind_name <- names(indicadores_completos)[indicadores_completos == input$ts_ind]
+
+    if (all(is.na(val))) {
+      return(plot_ly() %>% layout(title = "Sin datos disponibles"))
+    }
+
+    hover_text <- sapply(seq_len(nrow(df)), function(i) {
+      v <- df[[input$ts_ind]][i]
+      if (is.na(v)) return(paste0(df$año[i], ": Sin datos"))
+      paste0(df$año[i], ": ", format_value(v, input$ts_ind))
+    })
+
+    plot_ly(df,
+      x = ~año, y = ~val,
+      type = "scatter", mode = "lines+markers",
+      line = list(color = "#1a5276", width = 3),
+      marker = list(color = "#1a5276", size = 10,
+                    line = list(color = "#ffffff", width = 2)),
+      text = hover_text,
+      hovertemplate = "%{text}<extra></extra>",
+      showlegend = FALSE
+    ) %>%
+      layout(
+        xaxis = list(title = "Año", dtick = 1, gridcolor = "#e8e8e8"),
+        yaxis = list(title = ind_name, gridcolor = "#e8e8e8"),
+        plot_bgcolor = "rgba(0,0,0,0)",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        margin = list(l = 60, r = 20, t = 10, b = 50),
+        hovermode = "x"
+      )
+  })
+
+  # ── Series Temporales: estadísticos ──
+  output$ts_stats <- renderText({
+    req(ts_data(), input$ts_ind)
+    df <- ts_data()
+    val <- df[[input$ts_ind]]
+    val <- val[!is.na(val)]
+
+    if (length(val) == 0) return("Sin datos disponibles")
+    if (length(val) < 2) {
+      return(paste0("Valor (", df$año[1], "): ", format_value(val[1], input$ts_ind)))
+    }
+
+    cambio <- val[length(val)] - val[1]
+    cambio_pct <- round(cambio / val[1] * 100, 1)
+
+    paste0(
+      "Media: ", format_value(mean(val), input$ts_ind), "\n",
+      "Mín: ", format_value(min(val), input$ts_ind), " (", df$año[which.min(val)], ")\n",
+      "Máx: ", format_value(max(val), input$ts_ind), " (", df$año[which.max(val)], ")\n",
+      "Cambio ", df$año[1], "–", df$año[length(val)], ": ",
+      ifelse(cambio >= 0, "+", ""), format_value(abs(cambio), input$ts_ind),
+      " (", ifelse(cambio_pct >= 0, "+", ""), cambio_pct, "%)"
+    )
+  })
+
+  # ── Renta vs EV scatter plot (con recta de regresión) ──
+  output$renta_ev_scatter <- renderPlotly({
+    df <- renta_provincia
+    prov_sel <- input$prov_rel
+
+    # Regresión lineal
+    lm_fit <- lm(EV_Media ~ Renta_Media, data = df)
+    r2 <- summary(lm_fit)$r.squared
+    coefs <- coef(lm_fit)
+
+    # Línea de regresión
+    x_range <- seq(min(df$Renta_Media, na.rm = TRUE),
+                   max(df$Renta_Media, na.rm = TRUE), length.out = 100)
+    y_pred <- coefs[1] + coefs[2] * x_range
+
+    # Colores: resaltar provincia seleccionada
+    df$color <- ifelse(df$Provincia == prov_sel, "#e74c3c", "#1a5276")
+    df$size <- ifelse(df$Provincia == prov_sel, 20, 14)
+    df$alpha <- ifelse(df$Provincia == prov_sel, 1, 0.7)
+
+    p <- plot_ly() %>%
+      add_trace(
+        x = ~x_range, y = ~y_pred,
+        type = "scatter", mode = "lines",
+        line = list(color = "rgba(231, 76, 60, 0.5)", width = 2, dash = "dash"),
+        name = paste0("Tendencia lineal (R² = ", round(r2, 3), ")"),
+        hovertemplate = paste0("Recta de regresión<extra></extra>")
+      ) %>%
+      add_trace(
+        data = df,
+        x = ~Renta_Media, y = ~EV_Media,
+        type = "scatter", mode = "markers+text",
+        text = ~Provincia,
+        textposition = "top center",
+        textfont = list(size = 10, color = ~color),
+        marker = list(
+          size = ~size,
+          color = ~color,
+          opacity = ~alpha,
+          line = list(color = "#ffffff", width = 2)
+        ),
+        hovertemplate = paste0(
+          "<b>%{text}</b><br>",
+          "Renta media: %{x:,.0f} €<br>",
+          "EV media: %{y:.1f} años<extra></extra>"
+        ),
+        showlegend = FALSE
+      ) %>%
+      layout(
+        xaxis = list(title = "Renta mediana (€)", gridcolor = "#e8e8e8"),
+        yaxis = list(title = "Esperanza de vida (años)", gridcolor = "#e8e8e8"),
+        plot_bgcolor = "rgba(0,0,0,0)",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        margin = list(l = 50, r = 20, t = 10, b = 50),
+        hovermode = "closest"
+      )
+    p
+  })
+
+  # ── EV por provincia y sexo (barras agrupadas) ──
+  output$ev_provincia_sexo_bars <- renderPlotly({
+    df <- datos %>%
+      filter(año == 2022) %>%
+      select(Provincia, EV_Hombres, EV_Mujeres) %>%
+      distinct() %>%
+      tidyr::pivot_longer(cols = c(EV_Hombres, EV_Mujeres),
+                           names_to = "Sexo", values_to = "EV") %>%
+      mutate(Sexo = recode(Sexo,
+                           EV_Hombres = "Hombres",
+                           EV_Mujeres = "Mujeres"))
+
+    plot_ly(df,
+      x = ~Provincia, y = ~EV, color = ~Sexo,
+      type = "bar",
+      colors = c(Hombres = "#1a5276", Mujeres = "#e74c3c"),
+      barmode = "group",
+      hovertemplate = paste0(
+        "<b>%{x}</b><br>",
+        "%{meta}: %{y:.1f} años<extra></extra>"
+      )
+    ) %>%
+      layout(
+        xaxis = list(title = "", tickangle = -30, gridcolor = "#e8e8e8"),
+        yaxis = list(title = "Esperanza de vida (años)", gridcolor = "#e8e8e8"),
+        legend = list(orientation = "h", y = -0.25, x = 0.3),
+        plot_bgcolor = "rgba(0,0,0,0)",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        margin = list(l = 50, r = 20, t = 10, b = 80)
+      )
+  })
+
+  # ── Coeficiente de correlación ──
+  output$correlacion_text <- renderText({
+    df <- renta_provincia
+    r <- cor(df$Renta_Media, df$EV_Media, use = "complete.obs")
+    r2 <- r^2
+    paste0(
+      "r = ", round(r, 4), "\n",
+      "R² = ", round(r2, 4), " (", round(r2 * 100, 1), "% de la varianza explicada)\n\n",
+      "Interpretación: existe una correlación ",
+      ifelse(abs(r) > 0.8, "muy fuerte",
+             ifelse(abs(r) > 0.6, "fuerte",
+                    ifelse(abs(r) > 0.4, "moderada",
+                           ifelse(abs(r) > 0.2, "débil", "muy débil")))),
+      " y ", ifelse(r > 0, "positiva", "negativa"),
+      " entre la renta mediana y la esperanza de vida a nivel provincial."
+    )
+  })
+
+  # ── Causas Mortalidad: EV observada ──
+  output$ev_observada_valor <- renderText({
+    df <- if (input$causa_sexo == "Hombres") tabla_vida_hombres else tabla_vida_mujeres
+    paste0(df$esperanza_vida[1], " años")
+  })
+  output$ev_observada_sexo <- renderText({
+    paste0("EV al nacer — ", input$causa_sexo)
+  })
+
+  # ── Causas Mortalidad: Ganancia por causa (barras) ──
+  output$causas_ganancia_plot <- renderPlotly({
+    df <- ganancia_causas %>% filter(sexo == input$causa_sexo) %>% arrange(desc(ganancia_anos))
+    df$causa <- factor(df$causa, levels = df$causa[order(df$ganancia_anos)])
+
+    plot_ly(df,
+      x = ~ganancia_anos,
+      y = ~causa,
+      type = "bar",
+      orientation = "h",
+      marker = list(
+        color = ~colores_causas[causa],
+        line = list(color = "#ffffff", width = 1)
+      ),
+      hovertemplate = paste0(
+        "<b>%{y}</b><br>",
+        "Ganancia: %{x:.2f} años<br>",
+        "EV sin causa: %{customdata:.1f} años<extra></extra>"
+      ),
+      customdata = ~esperanza_vida_sin_causa
+    ) %>%
+      layout(
+        xaxis = list(title = "Años ganados", gridcolor = "#e8e8e8"),
+        yaxis = list(title = "", automargin = TRUE),
+        plot_bgcolor = "rgba(0,0,0,0)",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        margin = list(l = 200, r = 20, t = 10, b = 50)
+      )
+  })
+
+  # ── Causas Mortalidad: Tabla de ganancias ──
+  output$causas_tabla <- DT::renderDataTable({
+    df <- ganancia_causas %>% filter(sexo == input$causa_sexo) %>%
+      arrange(desc(ganancia_anos)) %>%
+      select(Causa = causa,
+             `EV observada` = esperanza_vida_observada,
+             `EV sin causa` = esperanza_vida_sin_causa,
+             `Ganancia (años)` = ganancia_anos)
+    DT::datatable(df, rownames = FALSE,
+      options = list(pageLength = 10, dom = "t",
+                     columnDefs = list(
+                       list(className = "dt-right", targets = 1:3)
+                     )),
+      class = "cell-border stripe hover"
+    ) %>%
+      DT::formatRound(columns = 2:3, digits = 2) %>%
+      DT::formatRound(columns = 4, digits = 2)
+  })
+
+  # ── Causas Mortalidad: EV por banda de edad ──
+  output$causas_ev_bandas <- renderPlotly({
+    df <- if (input$causa_sexo == "Hombres") tabla_vida_hombres else tabla_vida_mujeres
+
+    # Causa con mayor ganancia para mostrar la línea "sin causa"
+    causa_top <- ganancia_causas %>%
+      filter(sexo == input$causa_sexo) %>%
+      slice_max(ganancia_anos, n = 1) %>%
+      pull(causa)
+
+    plot_ly() %>%
+      add_trace(
+        data = df,
+        x = ~banda, y = ~esperanza_vida,
+        type = "scatter", mode = "lines+markers",
+        name = "EV observada",
+        line = list(color = "#1a5276", width = 3),
+        marker = list(color = "#1a5276", size = 8),
+        hovertemplate = paste0(
+          "Banda: %{x}<br>",
+          "EV observada: %{y:.1f} años<extra></extra>"
+        )
+      ) %>%
+      add_trace(
+        data = df,
+        x = ~banda, y = ~esperanza_vida_sin_causa,
+        type = "scatter", mode = "lines+markers",
+        name = paste0("Sin: ", causa_top),
+        line = list(color = "#e74c3c", width = 3, dash = "dash"),
+        marker = list(color = "#e74c3c", size = 8),
+        hovertemplate = paste0(
+          "Banda: %{x}<br>",
+          "EV sin ", causa_top, ": %{y:.1f} años<extra></extra>"
+        )
+      ) %>%
+      layout(
+        xaxis = list(title = "Banda de edad", tickangle = -45, gridcolor = "#e8e8e8"),
+        yaxis = list(title = "Esperanza de vida (años)", gridcolor = "#e8e8e8"),
+        legend = list(orientation = "h", y = -0.3, x = 0.1),
+        plot_bgcolor = "rgba(0,0,0,0)",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        margin = list(l = 50, r = 20, t = 10, b = 100)
+      )
   })
 
   # Narrative
@@ -380,89 +680,6 @@ server <- function(input, output, session) {
         title = HTML(paste0("<strong>", ind_name, "</strong>")),
         opacity = 1, labFormat = labelFormat(digits = 0, big.mark = ".", between = " – ")
       )
-  })
-
-  # ── Series Temporales ──
-  ts_series <- reactive({
-    req(input$prov_ts, input$ind_ts)
-    calc_ts(datos, input$prov_ts, input$ind_ts)
-  })
-
-  ts_series_and <- reactive({
-    req(input$ind_ts)
-    calc_ts(datos, "Toda Andalucía", input$ind_ts)
-  })
-
-  output$ts_title <- renderText({
-    req(input$prov_ts, input$ind_ts)
-    nombre_ind <- names(indicadores_ts)[indicadores_ts == input$ind_ts]
-    paste0(input$prov_ts, " — ", nombre_ind)
-  })
-
-  output$ts_plot <- renderPlotly({
-    req(ts_series())
-    serie <- ts_series()
-    nombre_ind <- names(indicadores_ts)[indicadores_ts == input$ind_ts]
-
-    p <- plot_ly() %>%
-      add_trace(
-        data = serie, x = ~año, y = ~valor, type = "scatter", mode = "lines+markers",
-        name = input$prov_ts,
-        line = list(color = "#1a5276", width = 3),
-        marker = list(color = "#1a5276", size = 7)
-      )
-
-    if (isTRUE(input$compare_and) && input$prov_ts != "Toda Andalucía") {
-      serie_and <- ts_series_and()
-      p <- p %>% add_trace(
-        data = serie_and, x = ~año, y = ~valor, type = "scatter", mode = "lines",
-        name = "Toda Andalucía",
-        line = list(color = "#5d6d7e", width = 2, dash = "dash")
-      )
-    }
-
-    p %>% layout(
-      xaxis = list(title = "Año", dtick = 1),
-      yaxis = list(title = nombre_ind),
-      hovermode = "x unified",
-      legend = list(orientation = "h", y = -0.2),
-      font = list(family = "Inter, sans-serif"),
-      margin = list(t = 20)
-    )
-  })
-
-  output$ts_table <- renderTable({
-    req(ts_series())
-    serie <- ts_series()
-    ind <- input$ind_ts
-    serie %>%
-      mutate(Valor = sapply(valor, function(v) {
-        if (ind == "brecha") {
-          if (is.na(v)) "—" else paste0(round(v, 2), "x")
-        } else {
-          format_value(v, ind)
-        }
-      })) %>%
-      select(Año = año, Valor)
-  }, striped = TRUE, bordered = TRUE, hover = TRUE, width = "100%")
-
-  output$ts_summary_box <- renderUI({
-    serie <- ts_series()
-    if (nrow(serie) < 2) return(NULL)
-    v_ini <- serie$valor[serie$año == min(serie$año)]
-    v_fin <- serie$valor[serie$año == max(serie$año)]
-    if (is.na(v_ini) || is.na(v_fin) || v_ini == 0) return(NULL)
-
-    cambio <- round((v_fin - v_ini) / v_ini * 100, 1)
-    color <- if (cambio >= 0) "#1e8449" else "#c0392b"
-    icono <- if (cambio >= 0) "arrow-up-circle-fill" else "arrow-down-circle-fill"
-
-    div(style = paste0("padding:12px; background:#f4f6f7; border-radius:10px; border-left:4px solid ", color, ";"),
-      div(style = "font-size:0.85em; color:#5d6d7e;",
-          paste0("Cambio ", min(serie$año), " \u2192 ", max(serie$año))),
-      div(style = paste0("font-size:1.4em; font-weight:800; color:", color, ";"),
-          bsicons::bs_icon(icono), paste0(" ", ifelse(cambio >= 0, "+", ""), cambio, "%"))
-    )
   })
 
   # AI Chat (Ollama local o API en la nube)
