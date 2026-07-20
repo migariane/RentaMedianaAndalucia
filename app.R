@@ -390,55 +390,52 @@ server <- function(input, output, session) {
   # ── Series Temporales: datos agregados por provincia ──
   ts_data <- reactive({
     req(input$ts_prov)
-    vars <- c("Renta_Mediana_UC", "edad_media", "pob", "menor_18", "mayor_65",
-              "tam_hogar", "hogares_uni", "pob_esp", "pob_extranjera",
-              "EV_Hombres", "EV_Mujeres", "EV_Media")
 
-    calc_ts <- function(df) {
-      # 1. Quintiles por año
-      df_q <- df %>%
-        group_by(año) %>%
-        mutate(q_renta = ntile(Renta_Mediana_UC, 5)) %>%
-        ungroup()
+    df <- if (input$ts_prov == "Toda Andalucía") datos else datos %>% filter(Provincia == input$ts_prov)
+    años_unicos <- sort(unique(df$año))
 
-      # 2. Medias de renta Q1 y Q5
-      medias_q <- df_q %>%
-        filter(q_renta %in% c(1, 5)) %>%
-        group_by(año, q_renta) %>%
-        summarise(renta_q = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop") %>%
-        mutate(nombre = ifelse(q_renta == 1, "q1_renta", "q5_renta")) %>%
-        select(año, nombre, renta_q) %>%
-        tidyr::pivot_wider(names_from = nombre, values_from = renta_q)
+    result_list <- lapply(años_unicos, function(ann) {
+      sub <- df %>% filter(año == ann)
 
-      # 3. Brecha P90/P10 sobre datos crudos (separa para evitar conflicto con across)
-      brechas <- df %>%
-        group_by(año) %>%
-        summarise(
-          brecha_p90p10 = {
-            q1p <- quantile(Renta_Mediana_UC, 0.1, na.rm = TRUE)
-            q9p <- quantile(Renta_Mediana_UC, 0.9, na.rm = TRUE)
-            if (is.na(q1p) || q1p == 0) NA_real_ else round(q9p / q1p, 2)
-          },
-          .groups = "drop"
-        )
+      # Medias de indicadores
+      medias <- c(
+        Renta_Mediana_UC = mean(sub$Renta_Mediana_UC, na.rm = TRUE),
+        edad_media = mean(sub$edad_media, na.rm = TRUE),
+        pob = mean(sub$pob, na.rm = TRUE),
+        menor_18 = mean(sub$menor_18, na.rm = TRUE),
+        mayor_65 = mean(sub$mayor_65, na.rm = TRUE),
+        tam_hogar = mean(sub$tam_hogar, na.rm = TRUE),
+        hogares_uni = mean(sub$hogares_uni, na.rm = TRUE),
+        pob_esp = mean(sub$pob_esp, na.rm = TRUE),
+        pob_extranjera = mean(sub$pob_extranjera, na.rm = TRUE),
+        EV_Hombres = mean(sub$EV_Hombres, na.rm = TRUE),
+        EV_Mujeres = mean(sub$EV_Mujeres, na.rm = TRUE),
+        EV_Media = mean(sub$EV_Media, na.rm = TRUE)
+      )
 
-      # 4. Medias de indicadores generales
-      medias <- df %>%
-        group_by(año) %>%
-        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+      # Brecha P90/P10
+      q1p <- quantile(sub$Renta_Mediana_UC, 0.1, na.rm = TRUE)
+      q9p <- quantile(sub$Renta_Mediana_UC, 0.9, na.rm = TRUE)
+      brecha_p90 <- if (is.na(q1p) || q1p == 0) NA_real_ else round(q9p / q1p, 2)
 
-      # 5. Unir todo
-      medias %>%
-        left_join(brechas, by = "año") %>%
-        left_join(medias_q, by = "año") %>%
-        mutate(brecha_q1_q5 = round(q5_renta / q1_renta, 2))
-    }
+      # Quintiles Q1 y Q5
+      q_renta <- ntile(sub$Renta_Mediana_UC, 5)
+      q1_renta_val <- mean(sub$Renta_Mediana_UC[q_renta == 1], na.rm = TRUE)
+      q5_renta_val <- mean(sub$Renta_Mediana_UC[q_renta == 5], na.rm = TRUE)
 
-    if (input$ts_prov == "Toda Andalucía") {
-      calc_ts(datos)
-    } else {
-      calc_ts(datos %>% filter(Provincia == input$ts_prov))
-    }
+      data.frame(
+        año = ann,
+        t(medias),
+        brecha_p90p10 = brecha_p90,
+        q1_renta = q1_renta_val,
+        q5_renta = q5_renta_val,
+        brecha_q1_q5 = round(q5_renta_val / q1_renta_val, 2),
+        stringsAsFactors = FALSE,
+        check.names = FALSE
+      )
+    })
+
+    do.call(rbind, result_list)
   })
 
   # ── Series Temporales: título ──
