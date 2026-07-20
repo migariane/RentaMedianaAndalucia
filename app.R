@@ -97,7 +97,23 @@ ui <- page_navbar(
       sidebar = sidebar(
         width = 300,
         selectInput("ts_prov", "Provincia:", choices = provincias_disponibles, selected = "Granada"),
-        selectInput("ts_ind", "Indicador:", choices = c(indicadores_completos, "Brecha P90/P10" = "brecha_p90p10"), selected = "Renta_Mediana_UC"),
+        selectInput("ts_ind", "Indicador:",
+          choices = c(
+            "Renta Mediana (€)" = "Renta_Mediana_UC",
+            "Brecha P90/P10" = "brecha_p90p10",
+            "Edad Media" = "edad_media",
+            "Población Total" = "pob",
+            "% Menores de 18 años" = "menor_18",
+            "% Mayores de 65 años" = "mayor_65",
+            "Tamaño Medio del Hogar" = "tam_hogar",
+            "% Hogares Unipersonales" = "hogares_uni",
+            "% Población Española" = "pob_esp",
+            "% Población Extranjera" = "pob_extranjera",
+            "Esperanza Vida (Hombres)" = "EV_Hombres",
+            "Esperanza Vida (Mujeres)" = "EV_Mujeres",
+            "Esperanza Vida (Media)" = "EV_Media"
+          ),
+          selected = "Renta_Mediana_UC"),
         hr(),
         p(strong("Estadísticos descriptivos"), style = "color:#1a5276; font-weight:600;"),
         div(style = "background:#eaf2f8; border-radius:8px; padding:12px; margin-top:6px;",
@@ -282,6 +298,23 @@ ui <- page_navbar(
 # ── SERVER ──
 server <- function(input, output, session) {
 
+  # Diccionario de nombres para indicadores de series temporales
+  ts_ind_names <- c(
+    "Renta_Mediana_UC" = "Renta Mediana",
+    "brecha_p90p10" = "Brecha P90/P10",
+    "edad_media" = "Edad Media",
+    "pob" = "Población Total",
+    "menor_18" = "% Menores 18",
+    "mayor_65" = "% Mayores 65",
+    "tam_hogar" = "Tamaño Hogar",
+    "hogares_uni" = "% Hogares Unip.",
+    "pob_esp" = "% Población Española",
+    "pob_extranjera" = "% Población Extranjera",
+    "EV_Hombres" = "EV Hombres",
+    "EV_Mujeres" = "EV Mujeres",
+    "EV_Media" = "EV Media"
+  )
+
   # Map loading
   mapa_shp <- reactive({
     req(input$prov, input$year)
@@ -384,7 +417,8 @@ server <- function(input, output, session) {
 
   # ── Series Temporales: título ──
   output$ts_title <- renderText({
-    ind_name <- names(indicadores_completos)[indicadores_completos == input$ts_ind]
+    ind_name <- ts_ind_names[input$ts_ind]
+    if (is.na(ind_name)) ind_name <- input$ts_ind
     paste0(input$ts_prov, " — ", ind_name)
   })
 
@@ -393,7 +427,8 @@ server <- function(input, output, session) {
     req(ts_data(), input$ts_ind)
     df <- ts_data()
     val <- df[[input$ts_ind]]
-    ind_name <- names(indicadores_completos)[indicadores_completos == input$ts_ind]
+    ind_name <- ts_ind_names[input$ts_ind]
+    if (is.na(ind_name)) ind_name <- input$ts_ind
 
     if (all(is.na(val))) {
       return(plot_ly() %>% layout(title = "Sin datos disponibles"))
