@@ -1,6 +1,6 @@
 # Desigualdades Sociales en Andalucía
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXXX)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.21237758.svg)](https://doi.org/10.5281/zenodo.21237758)
 ![R Shiny](https://img.shields.io/badge/Shiny-1.9.1-blue?logo=r)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
@@ -30,7 +30,7 @@ Aplicación web interactiva (Shiny) para visualizar datos socioeconómicos, demo
 
 Si utilizas esta aplicación en una publicación, por favor cítala como:
 
-> Luque-Fernández MA, Massó Guijarro P, Rivas Gervilla G, Nikšić M, Rivera Izquierdo M, Montero Alonso MÁ, Melchor Rodríguez JM. RENTASALUD: A Web-Based Interactive Atlas of Social Inequalities and Life Expectancy in Andalusia (Southern Spain). University of Granada; 2025. DOI: [10.5281/zenodo.XXXXXXXX](https://doi.org/10.5281/zenodo.XXXXXXXX)
+> Luque-Fernández MA, Massó Guijarro P, Rivas Gervilla G, Nikšić M, Rivera Izquierdo M, Montero Alonso MÁ, Melchor Rodríguez JM. RENTASALUD: A Web-Based Interactive Atlas of Social Inequalities and Life Expectancy in Andalusia (Southern Spain). University of Granada; 2025. DOI: [10.5281/zenodo.21237758](https://doi.org/10.5281/zenodo.21237758)
 
 ## Fuentes de datos
 
