@@ -395,21 +395,34 @@ server <- function(input, output, session) {
               "EV_Hombres", "EV_Mujeres", "EV_Media")
 
     calc_ts <- function(df) {
-      df %>%
+      # Calcular quintiles por año, luego agregar
+      df_con_q <- df %>%
         group_by(año) %>%
         mutate(q_renta = ntile(Renta_Mediana_UC, 5)) %>%
+        ungroup()
+
+      # Medias por quintil
+      q1 <- df_con_q %>% filter(q_renta == 1) %>% group_by(año) %>% summarise(q1_renta = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop")
+      q5 <- df_con_q %>% filter(q_renta == 5) %>% group_by(año) %>% summarise(q5_renta = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop")
+
+      # Agregación general por año
+      agg <- df %>%
+        group_by(año) %>%
         summarise(
           across(all_of(vars), ~ mean(.x, na.rm = TRUE)),
           brecha_p90p10 = {
-            q1 <- quantile(Renta_Mediana_UC, 0.1, na.rm = TRUE)
-            q9 <- quantile(Renta_Mediana_UC, 0.9, na.rm = TRUE)
-            if (is.na(q1) || q1 == 0) NA_real_ else round(q9 / q1, 2)
+            q1p <- quantile(Renta_Mediana_UC, 0.1, na.rm = TRUE)
+            q9p <- quantile(Renta_Mediana_UC, 0.9, na.rm = TRUE)
+            if (is.na(q1p) || q1p == 0) NA_real_ else round(q9p / q1p, 2)
           },
-          q1_renta = mean(Renta_Mediana_UC[q_renta == 1], na.rm = TRUE),
-          q5_renta = mean(Renta_Mediana_UC[q_renta == 5], na.rm = TRUE),
-          brecha_q1_q5 = round(q5_renta / q1_renta, 2),
           .groups = "drop"
         )
+
+      # Merge con las medias por quintil
+      agg %>%
+        left_join(q1, by = "año") %>%
+        left_join(q5, by = "año") %>%
+        mutate(brecha_q1_q5 = round(q5_renta / q1_renta, 2))
     }
 
     if (input$ts_prov == "Toda Andalucía") {
