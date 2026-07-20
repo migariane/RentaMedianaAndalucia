@@ -14,7 +14,7 @@ Aplicación web interactiva (Shiny) para visualizar datos socioeconómicos, demo
 
 **Web:** [migariane.github.io](https://migariane.github.io)
 
-**Shiny App:** [shinyapps.io link to insert]
+**Shiny App:** [watzile.shinyapps.io/RENTA/](https://watzile.shinyapps.io/RENTA/)
 
 ---
 
