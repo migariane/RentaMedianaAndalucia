@@ -24,7 +24,17 @@ datos <- datos %>%
   mutate(pob_extranjera = 100 - pob_esp)
 
 # ── Carga de Esperanza de Vida por provincia ──
-ev_prov <- read.csv("ev_por_provincia_ancho.csv", stringsAsFactors = FALSE)
+# La EV se calcula en pipeline_esperanza_vida_por_causa.R a nivel de provincia
+# (no de sección censal) porque la BDLPA no proporciona código de sección en
+# el fichero de personas. Ver pipeline para documentación detallada.
+ruta_ev <- if (file.exists("../Resultados/ev_por_provincia_ancho.csv")) {
+  "../Resultados/ev_por_provincia_ancho.csv"
+} else if (file.exists("/mnt/user-data/outputs/ev_por_provincia_ancho.csv")) {
+  "/mnt/user-data/outputs/ev_por_provincia_ancho.csv"
+} else {
+  "ev_por_provincia_ancho.csv"
+}
+ev_prov <- read.csv(ruta_ev, stringsAsFactors = FALSE)
 datos <- datos %>%
   left_join(ev_prov, by = c("Provincia" = "provincia"))
 datos$EV_Media <- round((datos$EV_Hombres + datos$EV_Mujeres) / 2, 2)
@@ -36,10 +46,33 @@ renta_provincia <- datos %>%
             EV_Media = mean(EV_Media, na.rm = TRUE),
             .groups = "drop")
 
-# ── Carga de ganancia de EV por causa y tablas de vida ──
-ganancia_causas <- read.csv("ganancia_esperanza_vida_por_causa.csv", stringsAsFactors = FALSE)
-tabla_vida_hombres <- read.csv("tabla_vida_hombres.csv", stringsAsFactors = FALSE)
-tabla_vida_mujeres <- read.csv("tabla_vida_mujeres.csv", stringsAsFactors = FALSE)
+# ── Carga de ganancia de EV por causa (desde el pipeline) ──
+ruta_ganancia <- if (file.exists("../Resultados/ganancia_esperanza_vida_por_causa.csv")) {
+  "../Resultados/ganancia_esperanza_vida_por_causa.csv"
+} else if (file.exists("/mnt/user-data/outputs/ganancia_esperanza_vida_por_causa.csv")) {
+  "/mnt/user-data/outputs/ganancia_esperanza_vida_por_causa.csv"
+} else {
+  "ganancia_esperanza_vida_por_causa.csv"
+}
+ganancia_causas <- read.csv(ruta_ganancia, stringsAsFactors = FALSE)
+
+# ── Carga de tabla de vida completa por sexo (para EV por bandas de edad) ──
+ruta_tabla_h <- if (file.exists("../Resultados/tabla_vida_hombres.csv")) {
+  "../Resultados/tabla_vida_hombres.csv"
+} else if (file.exists("/mnt/user-data/outputs/tabla_vida_hombres.csv")) {
+  "/mnt/user-data/outputs/tabla_vida_hombres.csv"
+} else {
+  "tabla_vida_hombres.csv"
+}
+ruta_tabla_m <- if (file.exists("../Resultados/tabla_vida_mujeres.csv")) {
+  "../Resultados/tabla_vida_mujeres.csv"
+} else if (file.exists("/mnt/user-data/outputs/tabla_vida_mujeres.csv")) {
+  "/mnt/user-data/outputs/tabla_vida_mujeres.csv"
+} else {
+  "tabla_vida_mujeres.csv"
+}
+tabla_vida_hombres <- read.csv(ruta_tabla_h, stringsAsFactors = FALSE)
+tabla_vida_mujeres <- read.csv(ruta_tabla_m, stringsAsFactors = FALSE)
 
 # Colores para cada causa (paleta fija para mantener consistencia entre gráficos)
 colores_causas <- c(
@@ -102,6 +135,9 @@ format_value <- function(valor, indicador) {
     "pob_esp" = , "pob_extranjera" = paste0(round(valor, 1), "%"),
     "Renta_Quintil" = paste0("Q", round(valor)),
     "brecha_p90p10" = paste0(round(valor, 1), "x"),
+    "brecha_q1_q5" = paste0(round(valor, 1), "x"),
+    "q1_renta" = paste0(format(round(valor), big.mark = ".", decimal.mark = ","), " €"),
+    "q5_renta" = paste0(format(round(valor), big.mark = ".", decimal.mark = ","), " €"),
     "edad_media" = paste0(round(valor, 1), " años"),
     "tam_hogar" = round(valor, 2),
     "EV_Hombres" = , "EV_Mujeres" = , "EV_Media" = paste0(round(valor, 1), " años"),
