@@ -621,6 +621,12 @@ server <- function(input, output, session) {
   output$causas_ev_bandas <- renderPlotly({
     df <- if (input$causa_sexo == "Hombres") tabla_vida_hombres else tabla_vida_mujeres
 
+    # Forzar orden correcto de bandas de edad (evitar orden alfabético)
+    orden_bandas <- c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34",
+                      "35-39", "40-44", "45-49", "50-54", "55-59", "60-64",
+                      "65-69", "70-74", "75-79", "80-84", "85-89", "90+")
+    df$banda <- factor(df$banda, levels = orden_bandas, ordered = TRUE)
+
     # Causa con mayor ganancia para mostrar la línea "sin causa"
     causa_top <- ganancia_causas %>%
       filter(sexo == input$causa_sexo) %>%
@@ -653,7 +659,8 @@ server <- function(input, output, session) {
         )
       ) %>%
       layout(
-        xaxis = list(title = "Banda de edad", tickangle = -45, gridcolor = "#e8e8e8"),
+        xaxis = list(title = "Banda de edad", tickangle = -45, gridcolor = "#e8e8e8",
+                     categoryorder = "array", categoryarray = orden_bandas),
         yaxis = list(title = "Esperanza de vida (años)", gridcolor = "#e8e8e8"),
         legend = list(orientation = "h", y = -0.3, x = 0.1),
         plot_bgcolor = "rgba(0,0,0,0)",
