@@ -1,33 +1,68 @@
 # Desigualdades Sociales en Andalucía
 
-Aplicación web interactiva (Shiny) para visualizar datos socioeconómicos y de renta de los hogares en Andalucía a nivel de sección censal (2015-2022). Incluye un Asistente Inteligente impulsado por IA que permite hacer preguntas sobre los datos en lenguaje natural garantizando la máxima privacidad, ya que se ejecuta íntegramente de forma local.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXXX.svg)](https://doi.org/10.5281/zenodo.XXXXXXXX)
+![R Shiny](https://img.shields.io/badge/Shiny-1.9.1-blue?logo=r)
+![License](https://img.shields.io/badge/license-MIT-green)
 
-**Autores:** Miguel Angel Luque Fernandez, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Angel Montero Alonso y Juan Manuel Melchor Rodriguez (Doctores de la UGR)
+<p align="center">
+  <img src="www/logo_ugr.png" alt="Universidad de Granada" height="80">
+</p>
+
+Aplicación web interactiva (Shiny) para visualizar datos socioeconómicos, demográficos y de esperanza de vida en Andalucía a nivel de sección censal (2015–2022). Incluye estimaciones de esperanza de vida por provincia y sexo, descomposición por causas de mortalidad, brechas de desigualdad (P90/P10, Q1 vs Q5) y un Asistente Inteligente impulsado por IA para consultas en lenguaje natural.
+
+**Autores:** Miguel Ángel Luque-Fernández, Paloma Massó Guijarro, Gustavo Rivas Gervilla, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez (Doctores de la UGR)
+
+**Web:** [migariane.github.io](https://migariane.github.io)
+
+**Shiny App:** [shinyapps.io link to insert]
 
 ---
 
-## Cómo ejecutar la aplicación en tu propio ordenador
+## Funcionalidades
 
-### 1. Requisitos Previos (R y RStudio)
-Necesitas tener instalados **R** y **RStudio** en tu equipo. Además, la primera vez que abras el proyecto, asegúrate de instalar las librerías necesarias ejecutando el siguiente código en la consola de RStudio:
-```R
-install.packages(c("shiny", "bslib", "leaflet", "dplyr", "sf", "stringr", "htmltools", "ellmer"))
+- **Mapa interactivo:** 12 indicadores socioeconómicos y de esperanza de vida por sección censal (2015–2022)
+- **Asistente IA:** consultas en lenguaje natural mediante Ollama (local) o API externa (OpenAI, Gemini)
+- **Series temporales:** evolución anual de renta, brechas y esperanza de vida por provincia
+- **Relaciones:** correlación renta–esperanza de vida con clustering y GAM
+- **Causas de mortalidad:** descomposición de ganancias en esperanza de vida por 10 grupos de causas
+
+## Cómo citar
+
+Si utilizas esta aplicación en una publicación, por favor cítala como:
+
+> Luque-Fernández MA, Massó Guijarro P, Rivas Gervilla G, Nikšić M, Rivera Izquierdo M, Montero Alonso MÁ, Melchor Rodríguez JM. RENTASALUD: A Web-Based Interactive Atlas of Social Inequalities and Life Expectancy in Andalusia (Southern Spain). University of Granada; 2025. DOI: [10.5281/zenodo.XXXXXXXX](https://doi.org/10.5281/zenodo.XXXXXXXX)
+
+## Fuentes de datos
+
+| Indicador | Fuente |
+|-----------|--------|
+| Renta y demografía | INE — Atlas de Distribución de Renta de los Hogares (2015–2022) |
+| Esperanza de Vida | BDLPA — Base de Datos Longitudinal de Población de Andalucía (IECA–UGR, cohorte 2011, seguimiento hasta 2023) |
+
+## Instalación y ejecución local
+
+### 1. Requisitos
+```r
+install.packages(c("shiny", "bslib", "leaflet", "dplyr", "sf", "stringr",
+                   "htmltools", "plotly", "ellmer"))
 ```
-*(Nota: la librería `querychat` puede requerir instalación desde GitHub si no se encuentra en CRAN).*
 
-### 2. Configurar el Asistente Inteligente (Ollama)
-Esta aplicación utiliza **Ollama** para que la Inteligencia Artificial procese tus preguntas de manera 100% local, sin enviar tus datos a la nube (garantizando tu privacidad).
+### 2. Configurar Asistente IA (opcional)
+```bash
+ollama pull llama3.2
+```
 
-Sigue estos pasos para configurarlo:
-1. **Descarga e instala Ollama**: Ve a [https://ollama.com](https://ollama.com) y descarga el instalador para tu sistema operativo (Windows, Mac o Linux).
-2. **Descarga el modelo de lenguaje**: Abre tu terminal (en Mac/Linux) o Símbolo del sistema/PowerShell (en Windows) y ejecuta el siguiente comando para descargar el modelo necesario:
-   ```bash
-   ollama pull llama3.2
-   ```
-   *(Este proceso puede tardar unos minutos dependiendo de tu conexión a internet).*
-3. **Mantén Ollama abierto**: Asegúrate de que la aplicación de Ollama se está ejecutando en segundo plano (verás el icono de una llama en tu barra de tareas o barra superior).
+### 3. Ejecutar
+Abrir `app.R` en RStudio y hacer clic en **Run App**.
 
-### 3. Ejecutar la Aplicación
-1. Abre el archivo `app.R` en RStudio.
-2. Haz clic en el botón **"Run App"** (situado en la parte superior del panel de código).
-3. ¡Listo! Ya puedes explorar los mapas sociodemográficos y hacerle preguntas al asistente inteligente en la pestaña "Asistente IA".
+## Autores y financiación
+
+**Autores (UGR):** Miguel Ángel Luque-Fernández, Paloma Massó Guijarro, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez
+
+**Colaboración internacional:** Maja Nikšić (Centre for Health Services Studies, University of Kent)
+
+**Financiación:** Plan Propio de Investigación y Transferencia de la Universidad de Granada. 2025. Programa 21. Programa de estimulación a la investigación.
+
+## Licencia
+
+MIT License. Copyright (c) 2025 Universidad de Granada.
