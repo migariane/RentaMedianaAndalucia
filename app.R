@@ -480,6 +480,15 @@ server <- function(input, output, session) {
       paste0(df$año[i], ": ", format_value(v, input$ts_ind))
     })
 
+    # Formato del eje Y según el indicador
+    y_tickformat <- switch(input$ts_ind,
+      "pob" = ",.0f",
+      "Renta_Mediana_UC" = ".,0f",
+      "q1_renta" = ".,0f",
+      "q5_renta" = ".,0f",
+      ".1f"
+    )
+
     plot_ly(df,
       x = ~año, y = ~val,
       type = "scatter", mode = "lines+markers",
@@ -492,7 +501,7 @@ server <- function(input, output, session) {
     ) %>%
       layout(
         xaxis = list(title = "Año", dtick = 1, gridcolor = "#e8e8e8"),
-        yaxis = list(title = ind_name, gridcolor = "#e8e8e8"),
+        yaxis = list(title = ind_name, gridcolor = "#e8e8e8", tickformat = y_tickformat),
         plot_bgcolor = "rgba(0,0,0,0)",
         paper_bgcolor = "rgba(0,0,0,0)",
         margin = list(l = 60, r = 20, t = 10, b = 50),
