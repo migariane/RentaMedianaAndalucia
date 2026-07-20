@@ -48,7 +48,7 @@ ui <- page_navbar(
       ),
 
       layout_columns(
-        col_widths = c(3, 3, 3, 3), fill = FALSE,
+        col_widths = c(2, 2, 2, 3, 3), fill = FALSE,
         value_box("Población", textOutput("total_pob"),
                   showcase = bsicons::bs_icon("people-fill"), theme = "primary"),
         value_box("Renta Mediana", textOutput("renta_media"),
@@ -56,7 +56,9 @@ ui <- page_navbar(
         value_box("Edad Media", textOutput("edad_prom"),
                   showcase = bsicons::bs_icon("person"), theme = "info"),
         value_box("Esperanza Vida", textOutput("ev_prom"),
-                  showcase = bsicons::bs_icon("heart-pulse"), theme = "danger")
+                  showcase = bsicons::bs_icon("heart-pulse"), theme = "danger"),
+        value_box("Brecha P90/P10", textOutput("brecha"),
+                  showcase = bsicons::bs_icon("arrow-left-right"), theme = "warning")
       ),
 
       div(class = "narrative-card",
@@ -95,7 +97,7 @@ ui <- page_navbar(
       sidebar = sidebar(
         width = 300,
         selectInput("ts_prov", "Provincia:", choices = provincias_disponibles, selected = "Granada"),
-        selectInput("ts_ind", "Indicador:", choices = indicadores_completos, selected = "Renta_Mediana_UC"),
+        selectInput("ts_ind", "Indicador:", choices = c(indicadores_completos, "Brecha P90/P10" = "brecha_p90p10"), selected = "Renta_Mediana_UC"),
         hr(),
         p(strong("Estadísticos descriptivos"), style = "color:#1a5276; font-weight:600;"),
         div(style = "background:#eaf2f8; border-radius:8px; padding:12px; margin-top:6px;",
@@ -337,21 +339,39 @@ server <- function(input, output, session) {
     paste0(round(ev, 1), " años")
   })
 
+  output$brecha <- renderText({
+    df <- datos_filtrados()
+    if (nrow(df) < 10) return("—")
+    q1 <- quantile(df$Renta_Mediana_UC, 0.1, na.rm = TRUE)
+    q9 <- quantile(df$Renta_Mediana_UC, 0.9, na.rm = TRUE)
+    if (is.na(q1) || q1 == 0) return("—")
+    paste0(round(q9 / q1, 1), "x")
+  })
+
   # ── Series Temporales: datos agregados por provincia ──
   ts_data <- reactive({
     req(input$ts_prov)
     vars <- c("Renta_Mediana_UC", "edad_media", "pob", "menor_18", "mayor_65",
               "tam_hogar", "hogares_uni", "pob_esp", "pob_extranjera",
-              "Renta_Quintil", "EV_Hombres", "EV_Mujeres", "EV_Media")
+              "EV_Hombres", "EV_Mujeres", "EV_Media")
+    calc_brecha <- function(x) {
+      q1 <- quantile(x, 0.1, na.rm = TRUE)
+      q9 <- quantile(x, 0.9, na.rm = TRUE)
+      if (is.na(q1) || q1 == 0) NA_real_ else round(q9 / q1, 2)
+    }
     if (input$ts_prov == "Toda Andalucía") {
       datos %>%
         group_by(año) %>%
-        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)),
+                  brecha_p90p10 = calc_brecha(Renta_Mediana_UC),
+                  .groups = "drop")
     } else {
       datos %>%
         filter(Provincia == input$ts_prov) %>%
         group_by(año) %>%
-        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)),
+                  brecha_p90p10 = calc_brecha(Renta_Mediana_UC),
+                  .groups = "drop")
     }
   })
 
