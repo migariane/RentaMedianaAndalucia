@@ -395,21 +395,25 @@ server <- function(input, output, session) {
               "EV_Hombres", "EV_Mujeres", "EV_Media")
 
     calc_ts <- function(df) {
-      # Calcular quintiles por año, luego agregar
-      df_con_q <- df %>%
+      # 1. Quintiles por año
+      df_q <- df %>%
         group_by(año) %>%
         mutate(q_renta = ntile(Renta_Mediana_UC, 5)) %>%
         ungroup()
 
-      # Medias por quintil
-      q1 <- df_con_q %>% filter(q_renta == 1) %>% group_by(año) %>% summarise(q1_renta = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop")
-      q5 <- df_con_q %>% filter(q_renta == 5) %>% group_by(año) %>% summarise(q5_renta = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop")
+      # 2. Medias de renta Q1 y Q5
+      medias_q <- df_q %>%
+        filter(q_renta %in% c(1, 5)) %>%
+        group_by(año, q_renta) %>%
+        summarise(renta_q = mean(Renta_Mediana_UC, na.rm = TRUE), .groups = "drop") %>%
+        mutate(nombre = ifelse(q_renta == 1, "q1_renta", "q5_renta")) %>%
+        select(año, nombre, renta_q) %>%
+        tidyr::pivot_wider(names_from = nombre, values_from = renta_q)
 
-      # Agregación general por año
-      agg <- df %>%
+      # 3. Brecha P90/P10 sobre datos crudos (separa para evitar conflicto con across)
+      brechas <- df %>%
         group_by(año) %>%
         summarise(
-          across(all_of(vars), ~ mean(.x, na.rm = TRUE)),
           brecha_p90p10 = {
             q1p <- quantile(Renta_Mediana_UC, 0.1, na.rm = TRUE)
             q9p <- quantile(Renta_Mediana_UC, 0.9, na.rm = TRUE)
@@ -418,10 +422,15 @@ server <- function(input, output, session) {
           .groups = "drop"
         )
 
-      # Merge con las medias por quintil
-      agg %>%
-        left_join(q1, by = "año") %>%
-        left_join(q5, by = "año") %>%
+      # 4. Medias de indicadores generales
+      medias <- df %>%
+        group_by(año) %>%
+        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)), .groups = "drop")
+
+      # 5. Unir todo
+      medias %>%
+        left_join(brechas, by = "año") %>%
+        left_join(medias_q, by = "año") %>%
         mutate(brecha_q1_q5 = round(q5_renta / q1_renta, 2))
     }
 
