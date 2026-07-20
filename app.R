@@ -354,24 +354,31 @@ server <- function(input, output, session) {
     vars <- c("Renta_Mediana_UC", "edad_media", "pob", "menor_18", "mayor_65",
               "tam_hogar", "hogares_uni", "pob_esp", "pob_extranjera",
               "EV_Hombres", "EV_Mujeres", "EV_Media")
-    calc_brecha <- function(x) {
-      q1 <- quantile(x, 0.1, na.rm = TRUE)
-      q9 <- quantile(x, 0.9, na.rm = TRUE)
-      if (is.na(q1) || q1 == 0) NA_real_ else round(q9 / q1, 2)
-    }
     if (input$ts_prov == "Toda Andalucía") {
       datos %>%
         group_by(año) %>%
-        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)),
-                  brecha_p90p10 = calc_brecha(Renta_Mediana_UC),
-                  .groups = "drop")
+        summarise(
+          across(all_of(vars), ~ mean(.x, na.rm = TRUE)),
+          brecha_p90p10 = {
+            q1 <- quantile(Renta_Mediana_UC, 0.1, na.rm = TRUE)
+            q9 <- quantile(Renta_Mediana_UC, 0.9, na.rm = TRUE)
+            if (is.na(q1) || q1 == 0) NA_real_ else round(q9 / q1, 2)
+          },
+          .groups = "drop"
+        )
     } else {
       datos %>%
         filter(Provincia == input$ts_prov) %>%
         group_by(año) %>%
-        summarise(across(all_of(vars), ~ mean(.x, na.rm = TRUE)),
-                  brecha_p90p10 = calc_brecha(Renta_Mediana_UC),
-                  .groups = "drop")
+        summarise(
+          across(all_of(vars), ~ mean(.x, na.rm = TRUE)),
+          brecha_p90p10 = {
+            q1 <- quantile(Renta_Mediana_UC, 0.1, na.rm = TRUE)
+            q9 <- quantile(Renta_Mediana_UC, 0.9, na.rm = TRUE)
+            if (is.na(q1) || q1 == 0) NA_real_ else round(q9 / q1, 2)
+          },
+          .groups = "drop"
+        )
     }
   })
 
