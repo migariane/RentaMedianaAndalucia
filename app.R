@@ -294,13 +294,13 @@ ui <- page_navbar(
           "Luque-Fernández MA, Massó Guijarro P, Rivas Gervilla G, Nikšić M, Rivera Izquierdo M, ",
           "Montero Alonso MÁ, Melchor Rodríguez JM. ",
           "RENTASALUD: A Web-Based Interactive Atlas of Social Inequalities and Life Expectancy ",
-          "in Andalusia (Southern Spain). University of Granada; 2025. DOI: 10.5281/zenodo.XXXXXXXX"),
+          "in Andalusia (Southern Spain). University of Granada; 2025. DOI: 10.5281/zenodo.21237758"),
         p(style = "margin-top:10px;",
-          tags$img(src = "https://zenodo.org/badge/DOI/10.5281/zenodo.XXXXXXXX.svg",
+          tags$img(src = "https://zenodo.org/badge/DOI/10.5281/zenodo.21237758.svg",
                    height = "20", style = "vertical-align:middle;"),
           HTML("&nbsp;"),
-          tags$a(href = "https://doi.org/10.5281/zenodo.XXXXXXXX",
-                 target = "_blank", "https://doi.org/10.5281/zenodo.XXXXXXXX"))
+          tags$a(href = "https://doi.org/10.5281/zenodo.21237758",
+                 target = "_blank", "https://doi.org/10.5281/zenodo.21237758"))
       ),
 
       h2("Autoría y Financiación"),
