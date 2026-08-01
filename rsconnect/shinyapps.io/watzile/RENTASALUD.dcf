@@ -1,0 +1,10 @@
+name: RENTASALUD
+title:
+username: watzile
+account: watzile
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 17626798
+bundleId: 12294940
+url: https://watzile.shinyapps.io/RENTASALUD/
+version: 1
