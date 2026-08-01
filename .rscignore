@@ -1,6 +1,4 @@
-.Rhistory
-.DS_Store
-.Rproj.user
-*.Rproj
 SHP/
-optimize_maps.R
+.Renviron
+.Rhistory
+.openclaude/
