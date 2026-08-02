@@ -28,7 +28,8 @@ ui <- page_navbar(
             p(strong("Fuente Esperanza de Vida:"), "BDLPA, Base de Datos Longitudinal de Población de Andalucía (Estadísticas Longitudinales de Supervivencia y Longevidad, cohorte censal 2011, seguimiento hasta 2023). Instituto de Estadística y Cartografía de Andalucía (IECA) y Universidad de Granada."),
             p(strong("Cartografía:"), "Shapefiles por año (INE)."),
             hr(),
-            p(strong("Autores:"), "Gustavo Rivas Gervilla, Paloma Massó Guijarro, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso, Juan Manuel Melchor Rodríguez y Miguel Ángel Luque-Fernández.", tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
+            p(strong("Autores:"), "Gustavo Rivas Gervilla, Paloma Massó Guijarro, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez."),
+            p(strong("Creador:"), "Miguel Ángel Luque-Fernández", tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
             hr(),
             div(style="text-align: center;", tags$img(src="logo_ugr.png", height="50px", style="margin-bottom: 10px;")),
             p(style="font-size: 0.85em; color: #5d6d7e;", strong("Financiación:"), "Plan Propio de Investigación y Transferencia de la Universidad de Granada. 2025. Programa 21. Programa de estimulación a la investigación.")
@@ -78,7 +79,7 @@ ui <- page_navbar(
       ),
 
       div(class = "app-footer",
-        HTML("Fuente: INE &middot; Atlas de Distribución de Renta de los Hogares &middot; BDLPA (IECA-UGR) &middot; Secciones censales 2015-2022 <br> Autores: Gustavo Rivas Gervilla, Paloma Massó Guijarro, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso, Juan Manuel Melchor Rodríguez y Miguel Ángel Luque-Fernández")
+        HTML("Fuente: INE &middot; Atlas de Distribución de Renta de los Hogares &middot; BDLPA (IECA-UGR) &middot; Secciones censales 2015-2022 <br> Creado por Miguel Ángel Luque-Fernández. Autores: Gustavo Rivas Gervilla, Paloma Massó Guijarro, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez.")
       )
     )
   ),
@@ -303,7 +304,8 @@ ui <- page_navbar(
 
       h2("Autoría y Financiación"),
       div(class = "definition-card",
-        p(strong("Autores:"), " Gustavo Rivas Gervilla, Paloma Massó Guijarro, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso, Juan Manuel Melchor Rodríguez y Miguel Ángel Luque-Fernández.", tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
+        p(strong("Autores:"), " Gustavo Rivas Gervilla, Paloma Massó Guijarro, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez."),
+        p(strong("Creador:"), " Miguel Ángel Luque-Fernández.", tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
         hr(),
         div(style="margin-bottom: 15px;", tags$img(src="logo_ugr.png", height="60px")),
         p(strong("Agradecimientos / Financiación:"), "Plan Propio de Investigación y Transferencia de la Universidad de Granada. 2025. Programa 21. Programa de estimulación a la investigación.")
