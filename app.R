@@ -61,21 +61,17 @@ ui <- page_navbar(
                   showcase = bsicons::bs_icon("arrow-left-right"), theme = "warning")
       ),
 
-      div(class = "narrative-card",
-        div(class = "narrative-title",
-          tags$span(class = "narrative-icon", bsicons::bs_icon("chat-quote")),
-          "Contexto social"
-        ),
-        div(class = "narrative-text", textOutput("narrativa"))
-      ),
-
       card(
-        full_screen = TRUE,
-        card_header(
-          class = "d-flex justify-content-between align-items-center",
-          div(strong("Mapa por sección censal"), textOutput("map_title", inline = TRUE))
-        ),
-        card_body(leafletOutput("map", height = "550px"))
+        full_screen = TRUE, style = "margin-top: 0;",
+        card_body(
+          leafletOutput("map", height = "72vh"),
+          div(class = "narrative-card", style = "margin-top: 8px; padding: 8px 12px; font-size: 0.85em;",
+            div(class = "narrative-title", style = "font-weight: 600; color: #1a5276; margin-bottom: 4px;",
+              tags$span(bsicons::bs_icon("chat-quote")), " Contexto social"
+            ),
+            div(class = "narrative-text", textOutput("narrativa"))
+          )
+        )
       ),
 
       div(class = "app-footer",
@@ -800,13 +796,13 @@ server <- function(input, output, session) {
     ind_name <- names(indicadores_completos)[indicadores_completos == input$ind]
     etiquetas <- build_tooltip(res, val, ind_name, input$ind)
 
-    leaflet(res) %>%
+    leaflet(res, options = leafletOptions(minZoom = 6, maxZoom = 14)) %>%
       addProviderTiles(providers$CartoDB.PositronNoLabels) %>%
       addProviderTiles(providers$CartoDB.PositronOnlyLabels,
                        options = providerTileOptions(zIndex = 1000)) %>%
       addPolygons(
-        fillColor = ~pal(val), color = "#ffffff", weight = 0.5,
-        fillOpacity = 0.85, opacity = 1, label = etiquetas,
+        fillColor = ~pal(val), color = "#c0c0c0", weight = 0.3,
+        fillOpacity = 0.88, opacity = 1, label = etiquetas,
         labelOptions = labelOptions(
           style = list("padding" = "8px 12px", "background-color" = "rgba(255,255,255,0.96)",
                        "border" = "1px solid #ccc", "border-radius" = "8px",
