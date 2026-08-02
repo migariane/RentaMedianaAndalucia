@@ -24,12 +24,11 @@ ui <- page_navbar(
         accordion(
           accordion_panel("Información", icon = bsicons::bs_icon("info-circle"),
             p(strong("Datos:"), "Secciones censales de Andalucía, 2015-2022."),
-            p(strong("Fuente Renta y Demografía:"), "INE — Atlas de Distribución de Renta de los Hogares."),
-            p(strong("Fuente Esperanza de Vida:"), "BDLPA — Base de Datos Longitudinal de Población de Andalucía (Estadísticas Longitudinales de Supervivencia y Longevidad, cohorte censal 2011, seguimiento hasta 2023). Instituto de Estadística y Cartografía de Andalucía (IECA) y Universidad de Granada."),
+            p(strong("Fuente Renta y Demografía:"), "INE, Atlas de Distribución de Renta de los Hogares."),
+            p(strong("Fuente Esperanza de Vida:"), "BDLPA, Base de Datos Longitudinal de Población de Andalucía (Estadísticas Longitudinales de Supervivencia y Longevidad, cohorte censal 2011, seguimiento hasta 2023). Instituto de Estadística y Cartografía de Andalucía (IECA) y Universidad de Granada."),
             p(strong("Cartografía:"), "Shapefiles por año (INE)."),
             hr(),
-            p(strong("Autores:"), "Miguel Ángel Luque-Fernández, Paloma Massó Guijarro, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez (Doctores de la UGR) — ",
-              tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
+            p(strong("Autores:"), "Gustavo Rivas Gervilla, Paloma Massó Guijarro, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso, Juan Manuel Melchor Rodríguez y Miguel Ángel Luque-Fernández.", tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
             hr(),
             div(style="text-align: center;", tags$img(src="logo_ugr.png", height="50px", style="margin-bottom: 10px;")),
             p(style="font-size: 0.85em; color: #5d6d7e;", strong("Financiación:"), "Plan Propio de Investigación y Transferencia de la Universidad de Granada. 2025. Programa 21. Programa de estimulación a la investigación.")
@@ -73,13 +72,13 @@ ui <- page_navbar(
         full_screen = TRUE,
         card_header(
           class = "d-flex justify-content-between align-items-center",
-          div(strong("Mapa por sección censal"), " — ", textOutput("map_title", inline = TRUE))
+          div(strong("Mapa por sección censal"), textOutput("map_title", inline = TRUE))
         ),
         card_body(leafletOutput("map", height = "550px"))
       ),
 
       div(class = "app-footer",
-        HTML("Fuente: INE &middot; Atlas de Distribución de Renta de los Hogares &middot; BDLPA (IECA-UGR) &middot; Secciones censales 2015-2022 <br> Autores: Miguel Ángel Luque-Fernández, Paloma Massó Guijarro, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez")
+        HTML("Fuente: INE &middot; Atlas de Distribución de Renta de los Hogares &middot; BDLPA (IECA-UGR) &middot; Secciones censales 2015-2022 <br> Autores: Gustavo Rivas Gervilla, Paloma Massó Guijarro, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso, Juan Manuel Melchor Rodríguez y Miguel Ángel Luque-Fernández")
       )
     )
   ),
@@ -131,7 +130,7 @@ ui <- page_navbar(
         full_screen = TRUE,
         card_header(
           class = "d-flex justify-content-between align-items-center",
-          div(strong("Evolución temporal por provincia"), " — ", textOutput("ts_title", inline = TRUE))
+          div(strong("Evolución temporal por provincia"), textOutput("ts_title", inline = TRUE))
         ),
         card_body(plotlyOutput("ts_plot", height = "500px"))
       )
@@ -282,7 +281,7 @@ ui <- page_navbar(
         p("Instituto Nacional de Estadística (INE)."),
         p(tags$a(href = "https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177088&menu=ultiDatos&idp=1254735976608",
                  target = "_blank", "Atlas de Distribución de Renta de los Hogares (ADRH)")),
-        p("BDLPA — Base de Datos Longitudinal de Población de Andalucía (Estadísticas Longitudinales de Supervivencia y Longevidad en Andalucía, cohorte censal 2011, seguimiento hasta 2023). Instituto de Estadística y Cartografía de Andalucía (IECA) y Universidad de Granada.")
+        p("BDLPA, Base de Datos Longitudinal de Población de Andalucía (Estadísticas Longitudinales de Supervivencia y Longevidad en Andalucía, cohorte censal 2011, seguimiento hasta 2023). Instituto de Estadística y Cartografía de Andalucía (IECA) y Universidad de Granada.")
       ),
 
       h2("Cómo citar"),
@@ -304,8 +303,7 @@ ui <- page_navbar(
 
       h2("Autoría y Financiación"),
       div(class = "definition-card",
-        p(strong("Autores:"), " Miguel Ángel Luque-Fernández, Paloma Massó Guijarro, Gustavo Rivas Gervilla, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso y Juan Manuel Melchor Rodríguez (Doctores de la UGR) — ",
-          tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
+        p(strong("Autores:"), " Gustavo Rivas Gervilla, Paloma Massó Guijarro, Maja Nikšić, Mario Rivera Izquierdo, Miguel Ángel Montero Alonso, Juan Manuel Melchor Rodríguez y Miguel Ángel Luque-Fernández.", tags$a(href="https://migariane.github.io", target="_blank", "migariane.github.io")),
         hr(),
         div(style="margin-bottom: 15px;", tags$img(src="logo_ugr.png", height="60px")),
         p(strong("Agradecimientos / Financiación:"), "Plan Propio de Investigación y Transferencia de la Universidad de Granada. 2025. Programa 21. Programa de estimulación a la investigación.")
@@ -457,7 +455,7 @@ server <- function(input, output, session) {
   output$ts_title <- renderText({
     ind_name <- ts_ind_names[input$ts_ind]
     if (is.na(ind_name)) ind_name <- input$ts_ind
-    paste0(input$ts_prov, " — ", ind_name)
+    paste0(input$ts_prov, ": ", ind_name)
   })
 
   # ── Series Temporales: gráfico de evolución ──
@@ -672,7 +670,7 @@ server <- function(input, output, session) {
     paste0(df$esperanza_vida[1], " años")
   })
   output$ev_observada_sexo <- renderText({
-    paste0("EV al nacer — ", input$causa_sexo)
+    paste0("EV al nacer, ", input$causa_sexo)
   })
 
   # ── Causas Mortalidad: Ganancia por causa (barras) ──
@@ -784,7 +782,7 @@ server <- function(input, output, session) {
   output$map_title <- renderText({
     req(input$prov, input$year)
     ind_name <- names(indicadores_completos)[indicadores_completos == input$ind]
-    paste0(input$prov, " — ", ind_name, " (", input$year, ")")
+    paste0(input$prov, ": ", ind_name, " (", input$year, ")")
   })
 
   # Map
