@@ -5,6 +5,6 @@ account: watzile
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 17585356
-bundleId: 12351504
+bundleId: 12389764
 url: https://watzile.shinyapps.io/RENTA/
 version: 1
