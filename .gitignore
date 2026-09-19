@@ -20,3 +20,6 @@ SHP/
 !.env.template
 .Rhistory
 .RData
+
+# Estado de despliegue rsconnect (machine-local, cambia en cada deploy)
+rsconnect/
