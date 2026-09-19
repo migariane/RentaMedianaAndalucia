@@ -11,3 +11,12 @@ explorations/
 notebooklm-mcp/
 scripts/
 SHP/
+
+# Secretos locales — NUNCA versionar
+.Renviron
+.Renviron.*
+.env
+.env.*
+!.env.template
+.Rhistory
+.RData
